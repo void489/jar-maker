@@ -1,0 +1,24 @@
+# MobZone configuration. Zones can be edited by hand, then run /mobzone reload.
+
+settings:
+  # How many blocks inside the zone wall a mob's centre must stay.
+  edge-margin: 0.4
+  # Knockback toward a wall is scaled down smoothly inside this many blocks.
+  knockback-guard: 4.0
+  # Within this many blocks of a wall, a path heading outward is cancelled.
+  edge-band: 1.5
+  # Ticks between checks of tracked mobs (only spawner mobs are checked).
+  check-interval-ticks: 4
+  # When creating a zone without explicit Y values, extend the top by this much.
+  y-extend-up: 6
+  # Last-resort fix: move a mob that is outside back to the nearest inside point.
+  snap-on-breach: true
+
+zones: {}
+# Example:
+# zones:
+#   cellblock:
+#     world: prison
+#     pos1: {x: -25, y: 100, z: -31}
+#     pos2: {x: 25, y: 110, z: -70}
+#     spawners: [walker1, walker2]

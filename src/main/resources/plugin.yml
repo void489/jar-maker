@@ -1,0 +1,15 @@
+name: MobZone
+version: '${version}'
+main: dev.mobzone.MobZonePlugin
+api-version: '26.1'
+depend: [MythicMobs]
+description: Keeps MythicMobs spawner mobs inside cuboid zones.
+commands:
+  mobzone:
+    description: Manage mob zones
+    usage: /mobzone <pos1|pos2|create|delete|list|info|addspawner|removespawner|reload>
+    aliases: [mz]
+permissions:
+  mobzone.admin:
+    description: Use /mobzone
+    default: op

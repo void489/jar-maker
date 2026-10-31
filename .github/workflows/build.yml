@@ -1,0 +1,29 @@
+name: Build MobZone
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: current
+      # Paper's version format for 26.1.x is not confirmed, so try both forms.
+      - name: Build (build-number style API version)
+        id: a
+        continue-on-error: true
+        run: gradle build -PpaperApi=26.1.2.build.+ --no-daemon
+      - name: Build (SNAPSHOT style API version)
+        if: steps.a.outcome == 'failure'
+        run: gradle build -PpaperApi=26.1.2-R0.1-SNAPSHOT --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MobZone-jar
+          path: build/libs/MobZone-*.jar
