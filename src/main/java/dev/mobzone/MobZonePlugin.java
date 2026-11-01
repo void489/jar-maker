@@ -82,8 +82,7 @@ public final class MobZonePlugin extends JavaPlugin {
 
     public void reloadAll() {
         reloadConfig();
-        // Fill any section missing from the server's config.yml (crates, quests, events...) from the built-in defaults.
-        getConfig().options().copyDefaults(true);
+        mergeDefaultSections();
         var c = getConfig();
         edgeMargin = c.getDouble("settings.edge-margin", 0.4);
         knockbackGuard = Math.max(0.1, c.getDouble("settings.knockback-guard", 4.0));
@@ -102,6 +101,22 @@ public final class MobZonePlugin extends JavaPlugin {
         crates.reload();
         quests.reload();
         events.reload();
+    }
+
+    /** Copies whole sections (crates, quests, events...) that are missing from the server's config.yml. In memory only. */
+    private void mergeDefaultSections() {
+        var in = getResource("config.yml");
+        if (in == null) return;
+        var def = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
+                new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+        for (String top : new String[]{"crates", "quests", "events", "welcome", "donor-bonus", "night-vision", "chat", "rank-bonus"}) {
+            if (getConfig().contains(top, true)) continue;
+            var sec = def.getConfigurationSection(top);
+            if (sec == null) continue;
+            for (var e : sec.getValues(true).entrySet())
+                if (!(e.getValue() instanceof org.bukkit.configuration.ConfigurationSection))
+                    getConfig().set(top + "." + e.getKey(), e.getValue());
+        }
     }
 
     public ZoneManager zones() { return zones; }
