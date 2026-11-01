@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -165,6 +165,15 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                     default -> say(sender, "/mobzone boss <spawn [zone|random]|despawn|status|reset>",
                             NamedTextColor.YELLOW);
                 }
+            }
+            case "me" -> {
+                if (!(sender instanceof org.bukkit.entity.Player pl)) { say(sender, "Players only.", NamedTextColor.RED); return true; }
+                var perms = RankBonus.held(pl);
+                say(sender, "papi prison_rank=" + RankBonus.placeholder(pl, "%prison_rank%")
+                        + " prestige_meta=" + RankBonus.placeholder(pl, "%luckperms_meta_prestige%"), NamedTextColor.YELLOW);
+                say(sender, "rank=" + RankBonus.rank(pl, perms) + " prestige=" + RankBonus.prestigeLevel(pl, perms)
+                        + " group-rank=" + RankBonus.rankIndex(perms) + " group-prestige=" + RankBonus.prestige(perms),
+                        NamedTextColor.YELLOW);
             }
             case "reload" -> {
                 plugin.reloadAll();

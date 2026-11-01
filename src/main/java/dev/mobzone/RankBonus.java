@@ -18,6 +18,7 @@ public class RankBonus implements Listener {
     private boolean enabled;
     private double percentPerRank;
     private double percentPerPrestige;
+    private boolean payBase;
     private final Map<String, Long> payouts = new HashMap<>();
 
     private static final Object[][] DEFAULTS = {
@@ -31,6 +32,7 @@ public class RankBonus implements Listener {
         var c = plugin.getConfig();
         enabled = c.getBoolean("rank-bonus.enabled", true);
         percentPerRank = c.getDouble("rank-bonus.percent-per-rank", 2.0);
+        payBase = c.getBoolean("rank-bonus.pay-base", true);
         percentPerPrestige = c.getDouble("rank-bonus.percent-per-prestige", 10.0);
         payouts.clear();
         for (Object[] d : DEFAULTS) payouts.put((String) d[0], ((Integer) d[1]).longValue());
@@ -103,7 +105,8 @@ public class RankBonus implements Listener {
         int idx = rank(p, perms);
         double pct = percentPerRank * Math.max(0, idx - 1) + percentPerPrestige * prestigeLevel(p, perms);
         long extra = Math.round(base * pct / 100.0);
-        if (extra <= 0) return;
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "eco give " + p.getName() + " " + extra);
+        long total = (payBase ? base : 0L) + extra;
+        if (total <= 0) return;
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "eco give " + p.getName() + " " + total);
     }
 }

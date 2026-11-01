@@ -52,6 +52,9 @@ night-vision:
 # Payouts below must match the 'eco give' amounts in your MythicMobs mob files.
 rank-bonus:
   enabled: true
+  # true = MobZone pays the whole kill reward (base + bonus) in ONE payment. Remove the 'eco give' lines from the
+  # MythicMobs zombie files when this is true (mobs-nopay.zip does that), or players get paid twice.
+  pay-base: true
   percent-per-rank: 2.0
   # Permanent bonus per prestige level (prestige_1..prestige_10 LuckPerms groups).
   percent-per-prestige: 10.0

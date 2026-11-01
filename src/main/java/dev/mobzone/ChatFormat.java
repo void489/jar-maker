@@ -32,7 +32,7 @@ public class ChatFormat implements Listener {
                 "Reaper", "Warlord", "Overlord", "Immortal", "Apex");
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChat(AsyncChatEvent e) {
         if (!enabled) return;
         var perms = RankBonus.held(e.getPlayer());
