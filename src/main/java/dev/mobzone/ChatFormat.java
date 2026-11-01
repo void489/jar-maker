@@ -36,8 +36,8 @@ public class ChatFormat implements Listener {
     public void onChat(AsyncChatEvent e) {
         if (!enabled) return;
         var perms = RankBonus.held(e.getPlayer());
-        int rank = Math.max(1, RankBonus.rankIndex(perms));
-        int pr = RankBonus.prestige(perms);
+        int rank = Math.max(1, RankBonus.rank(e.getPlayer(), perms));
+        int pr = RankBonus.prestigeLevel(e.getPlayer(), perms);
         String p = prefix.replace("{rank}", String.valueOf((char) ('A' + rank - 1)))
                 .replace("{prestige}", pr > 0 ? "[" + titles.get(Math.min(pr, titles.size()) - 1) + "] " : "");
         Component pre = LEGACY.deserialize(p);
