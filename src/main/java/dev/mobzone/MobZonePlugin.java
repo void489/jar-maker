@@ -82,6 +82,8 @@ public final class MobZonePlugin extends JavaPlugin {
 
     public void reloadAll() {
         reloadConfig();
+        // Fill any section missing from the server's config.yml (crates, quests, events...) from the built-in defaults.
+        getConfig().options().copyDefaults(true);
         var c = getConfig();
         edgeMargin = c.getDouble("settings.edge-margin", 0.4);
         knockbackGuard = Math.max(0.1, c.getDouble("settings.knockback-guard", 4.0));
