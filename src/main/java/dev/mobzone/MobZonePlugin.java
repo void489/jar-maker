@@ -53,8 +53,11 @@ public final class MobZonePlugin extends JavaPlugin {
     public void onDisable() {
         if (task != null) task.cancel();
         boss.shutdown();
+        nightVision.shutdown();
         tracked.clear();
     }
+
+    private final NightVision nightVision = new NightVision(this);
 
     public void reloadAll() {
         reloadConfig();
@@ -70,6 +73,7 @@ public final class MobZonePlugin extends JavaPlugin {
         if (task != null) task.cancel();
         task = getServer().getScheduler().runTaskTimer(this, this::sweep, intervalTicks, intervalTicks);
         boss.reload();
+        nightVision.reload();
     }
 
     public ZoneManager zones() { return zones; }
