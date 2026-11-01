@@ -59,7 +59,7 @@ rank-bonus:
   # Permanent bonus per prestige level (prestige_1..prestige_10 LuckPerms groups).
   percent-per-prestige: 10.0
 
-# Chat line "[Prestige] [Rank] Name: message". Set enabled: false to keep your old chat format.
+# Chat line "[Prestige] Name: message". Your rank letter already comes from your prefix. Use {rank} here to add it again. enabled: false keeps the old chat format.
 chat:
   enabled: true
-  format: "&#C084FC{prestige}&8[&f{rank}&8] &f"
+  format: "&#C084FC{prestige}"
