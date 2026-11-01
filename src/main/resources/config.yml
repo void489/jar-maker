@@ -22,3 +22,23 @@ zones: {}
 #     pos1: {x: -25, y: 100, z: -31}
 #     pos2: {x: 25, y: 110, z: -70}
 #     spawners: [walker1, walker2]
+
+# Timed boss events. One boss at a time, from a random zone, announced in chat.
+# The key under 'bosses' must match a MobZone zone name. x/y/z is where the boss appears.
+boss:
+  enabled: true
+  interval-minutes: 60          # a new boss every hour
+  despawn-minutes: 30           # an unkilled boss leaves after this long
+  min-damage-share: 0.05        # need at least 5% of the boss's health in damage to earn a reward
+  min-players: 1                # only spawn if this many players are in the prison world
+  warnings-seconds: [300, 60, 10]
+  bosses:
+    cellblock: {mob: BOSS_wardenzombie, name: "&cWarden Zombie", x: 0.5, y: 101, z: -51.5, reward: 2500}
+    cafeteria: {mob: BOSS_headchef, name: "&6Head Chef", x: 0.5, y: 101, z: -92.5, reward: 6000}
+    laundry: {mob: BOSS_foreman, name: "&eForeman", x: 0.5, y: 101, z: -132.5, reward: 12000}
+    infirmary: {mob: BOSS_chiefsurgeon, name: "&aChief Surgeon", x: 0.5, y: 101, z: -172.5, reward: 25000}
+    yard: {mob: BOSS_brutus, name: "&9Warden Brutus", x: 0.5, y: 101, z: -212.5, reward: 50000}
+    sewers: {mob: BOSS_sludgeking, name: "&2Sludge King", x: 0.5, y: 101, z: -252.5, reward: 100000}
+    lab: {mob: BOSS_drmortem, name: "&dDr. Mortem", x: 0.5, y: 101, z: -292.5, reward: 200000}
+    quarantine: {mob: BOSS_specimen0, name: "&5Specimen Zero", x: 0.5, y: 101, z: -332.5, reward: 400000}
+    subbasement: {mob: BOSS_patientzero, name: "&4&lPatient Zero", x: 0.5, y: 101, z: -372.5, reward: 1000000}

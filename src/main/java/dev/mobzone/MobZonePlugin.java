@@ -21,6 +21,7 @@ public final class MobZonePlugin extends JavaPlugin {
 
     public NamespacedKey zoneKey;
     private final ZoneManager zones = new ZoneManager(this);
+    private final BossManager boss = new BossManager(this);
     /** Only mobs that came from a configured spawner are in here. Main thread only. */
     private final Map<UUID, Tracked> tracked = new HashMap<>();
     private BukkitTask task;
@@ -39,6 +40,7 @@ public final class MobZonePlugin extends JavaPlugin {
         reloadAll();
 
         getServer().getPluginManager().registerEvents(new MobZoneListener(this), this);
+        getServer().getPluginManager().registerEvents(boss, this);
         MobZoneCommand cmd = new MobZoneCommand(this);
         var pc = getCommand("mobzone");
         if (pc != null) {
@@ -50,6 +52,7 @@ public final class MobZonePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         if (task != null) task.cancel();
+        boss.shutdown();
         tracked.clear();
     }
 
@@ -66,9 +69,12 @@ public final class MobZonePlugin extends JavaPlugin {
 
         if (task != null) task.cancel();
         task = getServer().getScheduler().runTaskTimer(this, this::sweep, intervalTicks, intervalTicks);
+        boss.reload();
     }
 
     public ZoneManager zones() { return zones; }
+
+    public BossManager boss() { return boss; }
 
     public void track(Mob mob, String zoneName) {
         tracked.put(mob.getUniqueId(), new Tracked(mob, zoneName));

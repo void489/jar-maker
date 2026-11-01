@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -144,6 +144,28 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                     say(sender, a[2] + " is not in " + z.name, NamedTextColor.RED);
                 }
             }
+            case "boss" -> {
+                BossManager bm = plugin.boss();
+                String sub = a.length > 1 ? a[1].toLowerCase(Locale.ROOT) : "status";
+                switch (sub) {
+                    case "spawn" -> {
+                        String err = bm.spawnNow(a.length > 2 ? a[2] : null);
+                        say(sender, err == null ? "Boss spawned." : err,
+                                err == null ? NamedTextColor.GREEN : NamedTextColor.RED);
+                    }
+                    case "despawn" -> say(sender, bm.despawnNow() ? "Boss removed." : "No boss is active.",
+                            NamedTextColor.YELLOW);
+                    case "reset" -> {
+                        bm.resetTimer();
+                        say(sender, "Boss timer restarted with a new random zone.", NamedTextColor.GREEN);
+                    }
+                    case "status" -> {
+                        for (String line : bm.status()) say(sender, line, NamedTextColor.YELLOW);
+                    }
+                    default -> say(sender, "/mobzone boss <spawn [zone|random]|despawn|status|reset>",
+                            NamedTextColor.YELLOW);
+                }
+            }
             case "reload" -> {
                 plugin.reloadAll();
                 say(sender, "MobZone reloaded.", NamedTextColor.GREEN);
@@ -162,6 +184,17 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
             return out;
         }
         String sub = a[0].toLowerCase(Locale.ROOT);
+        if (sub.equals("boss")) {
+            if (a.length == 2) {
+                for (String s : List.of("spawn", "despawn", "status", "reset"))
+                    if (s.startsWith(a[1].toLowerCase(Locale.ROOT))) out.add(s);
+            } else if (a.length == 3 && a[1].equalsIgnoreCase("spawn")) {
+                List<String> opts = new ArrayList<>(plugin.boss().zoneKeys());
+                opts.add("random");
+                for (String s : opts) if (s.startsWith(a[2].toLowerCase(Locale.ROOT))) out.add(s);
+            }
+            return out;
+        }
         if (a.length == 2 && List.of("delete", "info", "addspawner", "removespawner").contains(sub)) {
             for (Zone z : plugin.zones().all())
                 if (z.name.toLowerCase(Locale.ROOT).startsWith(a[1].toLowerCase(Locale.ROOT))) out.add(z.name);

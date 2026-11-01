@@ -35,11 +35,23 @@ Permission: `mobzone.admin` (op by default). Zones are stored in `config.yml` an
   (rare backstop; turn off with `snap-on-breach: false`).
 - Dead, despawned or unloaded mobs are removed from tracking automatically. Tagged mobs are re-tracked on chunk load.
 
+## Timed boss events (v1.1.0)
+Configured under `boss:` in `config.yml`. Every `interval-minutes` (60) one boss from a random zone spawns, as long
+as at least `min-players` (1) player is in the prison world. Chat countdown at 5 min / 1 min / 10 s (zone name only).
+Only one boss is ever alive. An unkilled boss leaves after `despawn-minutes` (30). Cash (`eco give`) is split by damage
+dealt; players under `min-damage-share` (5%) of the boss's health get nothing. The boss is tracked by MobZone like a
+spawner mob, so it cannot leave its zone. Remove the old `boss_*` spawner files: the plugin spawns bosses itself.
+
+Admin: `/mobzone boss spawn [zone|random]`, `/mobzone boss despawn`, `/mobzone boss status`, `/mobzone boss reset`.
+
+Unverified: `MythicMob#spawn(location, level)` with level `1`, `getMythicMob(name).orElse(null)`.
+Boss minions come from the boss's own summon skill, so they are not zone-tracked.
+
 ## Honest limits
 - Paper has no API to forbid a mob's physical movement. A path chosen *before* it reached a wall can
   still carry it a short way, and explosions or other velocity can push a mob. The snap-back backstop
   catches those. A hard guarantee would need Minecraft internals, which is fragile across versions.
-- Not run on a real server. The distance maths is unit-tested (`ZoneSelfTest.java` passes locally); the
+- Not run on a real server. The distance maths is unit-tested (`ZoneSelfTest.java` and `BossSelfTest.java` pass locally); the
   Paper/MythicMobs integration compiled only by the GitHub build.
 - Unverified details: `isFromMythicSpawner()` was reported as always false in older MythicMobs versions;
   `api-version: '26.1'`; `EntitiesLoadEvent`; `MythicSpawner.getName()` equalling the spawner's id.
