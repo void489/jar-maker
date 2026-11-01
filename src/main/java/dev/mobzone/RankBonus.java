@@ -16,6 +16,7 @@ public class RankBonus implements Listener {
     private final MobZonePlugin plugin;
     private boolean enabled;
     private double percentPerRank;
+    private double percentPerPrestige;
     private final Map<String, Long> payouts = new HashMap<>();
 
     private static final Object[][] DEFAULTS = {
@@ -29,6 +30,7 @@ public class RankBonus implements Listener {
         var c = plugin.getConfig();
         enabled = c.getBoolean("rank-bonus.enabled", true);
         percentPerRank = c.getDouble("rank-bonus.percent-per-rank", 2.0);
+        percentPerPrestige = c.getDouble("rank-bonus.percent-per-prestige", 10.0);
         payouts.clear();
         for (Object[] d : DEFAULTS) payouts.put((String) d[0], ((Integer) d[1]).longValue());
         var sec = c.getConfigurationSection("rank-bonus.payouts");
@@ -43,6 +45,11 @@ public class RankBonus implements Listener {
         return 0;
     }
 
+    static int prestige(Player p) {
+        for (int i = 10; i >= 1; i--) if (p.hasPermission("group.prestige_" + i)) return i;
+        return 0;
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDeath(MythicMobDeathEvent e) {
         if (!enabled) return;
@@ -50,8 +57,8 @@ public class RankBonus implements Listener {
         Long base = payouts.get(e.getMobType().getInternalName().toLowerCase(Locale.ROOT));
         if (base == null) return;
         int idx = rankIndex(p);
-        if (idx <= 1) return; // rank A (or none) = no bonus
-        long extra = Math.round(base * percentPerRank * (idx - 1) / 100.0);
+        double pct = percentPerRank * Math.max(0, idx - 1) + percentPerPrestige * prestige(p);
+        long extra = Math.round(base * pct / 100.0);
         if (extra <= 0) return;
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "eco give " + p.getName() + " " + extra);
     }

@@ -53,3 +53,5 @@ night-vision:
 rank-bonus:
   enabled: true
   percent-per-rank: 2.0
+  # Permanent bonus per prestige level (prestige_1..prestige_10 LuckPerms groups).
+  percent-per-prestige: 10.0
