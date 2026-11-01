@@ -19,6 +19,7 @@ public class RankBonus implements Listener {
     private double percentPerRank;
     private double percentPerPrestige;
     private boolean payBase;
+    private final Map<String, Double> donor = new HashMap<>();
     private final Map<String, Long> payouts = new HashMap<>();
 
     private static final Object[][] DEFAULTS = {
@@ -34,6 +35,9 @@ public class RankBonus implements Listener {
         percentPerRank = c.getDouble("rank-bonus.percent-per-rank", 2.0);
         payBase = c.getBoolean("rank-bonus.pay-base", true);
         percentPerPrestige = c.getDouble("rank-bonus.percent-per-prestige", 10.0);
+        donor.clear();
+        var ds = c.getConfigurationSection("donor-bonus");
+        if (ds != null) for (String k : ds.getKeys(false)) donor.put(k.toLowerCase(Locale.ROOT), ds.getDouble(k));
         payouts.clear();
         for (Object[] d : DEFAULTS) payouts.put((String) d[0], ((Integer) d[1]).longValue());
         var sec = c.getConfigurationSection("rank-bonus.payouts");
@@ -104,8 +108,11 @@ public class RankBonus implements Listener {
         var perms = held(p);
         int idx = rank(p, perms);
         double pct = percentPerRank * Math.max(0, idx - 1) + percentPerPrestige * prestigeLevel(p, perms);
+        double best = 0;
+        for (var d : donor.entrySet()) if (perms.contains("group." + d.getKey())) best = Math.max(best, d.getValue());
+        pct += best;
         long extra = Math.round(base * pct / 100.0);
-        long total = (payBase ? base : 0L) + extra;
+        long total = Math.round(((payBase ? base : 0L) + extra) * plugin.events().cashMultiplier() * plugin.crates().cashMultiplier(p));
         if (total <= 0) return;
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "eco give " + p.getName() + " " + total);
     }

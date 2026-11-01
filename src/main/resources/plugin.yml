@@ -9,6 +9,12 @@ commands:
     description: Manage mob zones
     usage: /mobzone <pos1|pos2|create|delete|list|info|addspawner|removespawner|reload>
     aliases: [mz]
+  quests:
+    description: Show your daily quests
+    usage: /quests
+  events:
+    description: Show the current server event
+    usage: /events
 permissions:
   mobzone.admin:
     description: Use /mobzone

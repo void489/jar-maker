@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "event");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -164,6 +164,25 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                     }
                     default -> say(sender, "/mobzone boss <spawn [zone|random]|despawn|status|reset>",
                             NamedTextColor.YELLOW);
+                }
+            }
+            case "crate" -> {
+                if (a.length >= 4 && a[1].equalsIgnoreCase("open")) {
+                    Player t = org.bukkit.Bukkit.getPlayerExact(a[3]);
+                    if (t == null) say(sender, "That player isn't online.", NamedTextColor.RED);
+                    else plugin.crates().open(t, a[2]);
+                } else say(sender, "/mobzone crate open <crate> <player>  (crates: " + String.join(", ", plugin.crates().ids()) + ")", NamedTextColor.YELLOW);
+            }
+            case "event" -> {
+                String sub = a.length > 1 ? a[1].toLowerCase(Locale.ROOT) : "status";
+                switch (sub) {
+                    case "start" -> {
+                        long mins = a.length > 3 ? Long.parseLong(a[3]) : 15;
+                        if (a.length < 3 || !plugin.events().start(a[2], mins))
+                            say(sender, "/mobzone event start <" + String.join("|", plugin.events().ids()) + "> [minutes]", NamedTextColor.YELLOW);
+                    }
+                    case "stop" -> plugin.events().stop(true);
+                    default -> Util.tell(sender, plugin.events().status());
                 }
             }
             case "me" -> {

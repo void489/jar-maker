@@ -43,6 +43,13 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(boss, this);
         getServer().getPluginManager().registerEvents(rankBonus, this);
         getServer().getPluginManager().registerEvents(chatFormat, this);
+        getServer().getPluginManager().registerEvents(quests, this);
+        getServer().getPluginManager().registerEvents(welcome, this);
+        PlayerCommands pcmds = new PlayerCommands(this);
+        for (String n : new String[]{"quests", "events"}) {
+            var c = getCommand(n);
+            if (c != null) c.setExecutor(pcmds);
+        }
         MobZoneCommand cmd = new MobZoneCommand(this);
         var pc = getCommand("mobzone");
         if (pc != null) {
@@ -56,12 +63,22 @@ public final class MobZonePlugin extends JavaPlugin {
         if (task != null) task.cancel();
         boss.shutdown();
         nightVision.shutdown();
+        quests.shutdown();
+        events.shutdown();
         tracked.clear();
     }
 
     private final NightVision nightVision = new NightVision(this);
     private final RankBonus rankBonus = new RankBonus(this);
     private final ChatFormat chatFormat = new ChatFormat(this);
+    private final CrateManager crates = new CrateManager(this);
+    private final QuestManager quests = new QuestManager(this);
+    private final EventManager events = new EventManager(this);
+    private final JoinWelcome welcome = new JoinWelcome(this);
+
+    public CrateManager crates() { return crates; }
+    public QuestManager quests() { return quests; }
+    public EventManager events() { return events; }
 
     public void reloadAll() {
         reloadConfig();
@@ -80,6 +97,9 @@ public final class MobZonePlugin extends JavaPlugin {
         nightVision.reload();
         rankBonus.reload();
         chatFormat.reload();
+        crates.reload();
+        quests.reload();
+        events.reload();
     }
 
     public ZoneManager zones() { return zones; }

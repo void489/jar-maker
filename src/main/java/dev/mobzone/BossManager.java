@@ -341,7 +341,8 @@ public final class BossManager implements Listener {
             if (name == null) continue;
             long amount = en.getValue();
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "eco give " + name + " " + amount);
-            long tok = tokenShares.getOrDefault(en.getKey(), 0L);
+            long tok = Math.round(tokenShares.getOrDefault(en.getKey(), 0L) * plugin.events().tokenMultiplier());
+            if (online != null) plugin.quests().onBossFight(online);
             if (tok > 0) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "points give " + name + " " + tok);
             if (rank <= 10) {
                 int pct = (int) Math.round(100.0 * damage.getOrDefault(en.getKey(), 0.0) / sum);

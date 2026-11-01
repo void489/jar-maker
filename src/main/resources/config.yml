@@ -63,3 +63,89 @@ rank-bonus:
 chat:
   enabled: true
   format: "&#C084FC{prestige}"
+
+# ---------------------------------------------------------------- crates
+# Players open these from /crates (Bio Tokens). Reward types: cash, tokens, booster, command.
+# weight = relative chance. broadcast: true announces the win to everyone. {player} works in command rewards.
+crates:
+  common:
+    name: "&7Common Crate"
+    cost: 20
+    rewards:
+      - {weight: 50, type: cash, amount: 100000}
+      - {weight: 30, type: cash, amount: 500000}
+      - {weight: 12, type: tokens, amount: 10}
+      - {weight: 6, type: booster, multiplier: 1.5, minutes: 10}
+      - {weight: 2, type: cash, amount: 5000000, broadcast: true}
+  rare:
+    name: "&9Rare Crate"
+    cost: 75
+    rewards:
+      - {weight: 45, type: cash, amount: 2000000}
+      - {weight: 30, type: cash, amount: 10000000}
+      - {weight: 12, type: tokens, amount: 60}
+      - {weight: 8, type: booster, multiplier: 2.0, minutes: 15}
+      - {weight: 4, type: cash, amount: 100000000, broadcast: true}
+      - {weight: 1, type: tokens, amount: 300, broadcast: true}
+  legendary:
+    name: "&6&lLegendary Crate"
+    cost: 250
+    rewards:
+      - {weight: 40, type: cash, amount: 50000000}
+      - {weight: 30, type: cash, amount: 250000000}
+      - {weight: 14, type: tokens, amount: 250}
+      - {weight: 10, type: booster, multiplier: 2.0, minutes: 30}
+      - {weight: 5, type: cash, amount: 2000000000, broadcast: true}
+      - {weight: 1, type: tokens, amount: 1500, broadcast: true}
+
+# ---------------------------------------------------------------- daily quests
+# Each player gets per-day random quests they are eligible for (min-kills = their total kills needed).
+# type: kills (any zombie), mob (a specific MythicMobs name), boss (take part in a boss fight).
+quests:
+  enabled: true
+  per-day: 3
+  pool:
+    - {id: kills_100, desc: "Kill 100 zombies", type: kills, target: 100, cash: 20000, tokens: 2, min-kills: 0}
+    - {id: kills_300, desc: "Kill 300 zombies", type: kills, target: 300, cash: 100000, tokens: 4, min-kills: 600}
+    - {id: kills_800, desc: "Kill 800 zombies", type: kills, target: 800, cash: 500000, tokens: 8, min-kills: 3000}
+    - {id: kills_2000, desc: "Kill 2,000 zombies", type: kills, target: 2000, cash: 3000000, tokens: 15, min-kills: 13500}
+    - {id: walker_60, desc: "Kill 60 Walkers", type: mob, mob: Walker, target: 60, cash: 15000, tokens: 2, min-kills: 0}
+    - {id: runner_40, desc: "Kill 40 Runners", type: mob, mob: Runner, target: 40, cash: 15000, tokens: 2, min-kills: 0}
+    - {id: brute_40, desc: "Kill 40 Brutes", type: mob, mob: Brute, target: 40, cash: 60000, tokens: 3, min-kills: 175}
+    - {id: cook_40, desc: "Kill 40 Cooks", type: mob, mob: Cook, target: 40, cash: 100000, tokens: 3, min-kills: 600}
+    - {id: stoker_40, desc: "Kill 40 Stokers", type: mob, mob: Stoker, target: 40, cash: 200000, tokens: 4, min-kills: 1500}
+    - {id: spitter_40, desc: "Kill 40 Spitters", type: mob, mob: Spitter, target: 40, cash: 400000, tokens: 5, min-kills: 3200}
+    - {id: guard_40, desc: "Kill 40 Guards", type: mob, mob: Guard, target: 40, cash: 800000, tokens: 6, min-kills: 8000}
+    - {id: mutant_30, desc: "Kill 30 Mutants", type: mob, mob: Mutant, target: 30, cash: 2000000, tokens: 8, min-kills: 27000}
+    - {id: elite_25, desc: "Kill 25 Elites", type: mob, mob: Elite, target: 25, cash: 5000000, tokens: 12, min-kills: 88000}
+    - {id: boss_1, desc: "Take part in a boss fight", type: boss, target: 1, cash: 100000, tokens: 5, min-kills: 175}
+
+# ---------------------------------------------------------------- timed events
+# Every interval-minutes a random event starts and runs for duration-minutes (only if players are online).
+events:
+  enabled: true
+  interval-minutes: 180
+  duration-minutes: 15
+  min-players: 1
+  types:
+    double_cash: {name: "&6Double Cash", cash: 2.0, tokens: 1.0}
+    bio_rush: {name: "&bBio Rush", cash: 1.0, tokens: 2.0}
+    frenzy: {name: "&dFrenzy", cash: 1.5, tokens: 1.5}
+
+# ---------------------------------------------------------------- welcome (first join only)
+welcome:
+  enabled: true
+  open-guide: true
+  title: "&#A855F7&lWELCOME"
+  subtitle: "&7Survive the Dead Cell Block"
+  messages:
+    - "&#A855F7&lWelcome, {player}!"
+    - "&7Kill zombies for cash, then &f/rankup &7to climb."
+    - "&7Type &f/guide &7any time to see your next step."
+
+# ---------------------------------------------------------------- donor bonus (extra % cash per kill)
+# Players get the highest one they have. These are LuckPerms groups.
+donor-bonus:
+  donor_vip: 10
+  donor_plus: 20
+  donor_elite: 30
