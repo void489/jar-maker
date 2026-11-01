@@ -47,3 +47,9 @@ boss:
 night-vision:
   enabled: true
   worlds: [prison]
+
+# Extra cash on every zombie kill: percent-per-rank x (rank number - 1). Rank A = 0%, Z = 25 x 2% = +50%.
+# Payouts below must match the 'eco give' amounts in your MythicMobs mob files.
+rank-bonus:
+  enabled: true
+  percent-per-rank: 2.0

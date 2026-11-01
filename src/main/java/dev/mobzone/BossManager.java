@@ -36,7 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * The boss is tagged and tracked like a spawner mob, so the zone boundary still applies to it.
  */
 public final class BossManager implements Listener {
-    private record BossDef(String zone, String mob, String name, double x, double y, double z, long reward) {}
+    private record BossDef(String zone, String mob, String name, double x, double y, double z, long reward, long tokens) {}
 
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacyAmpersand();
 
@@ -90,7 +90,8 @@ public final class BossManager implements Listener {
                         s.getString("mob"),
                         s.getString("name", key),
                         s.getDouble("x"), s.getDouble("y"), s.getDouble("z"),
-                        s.getLong("reward", 0)));
+                        s.getLong("reward", 0),
+                        s.getLong("tokens", defaultTokens(key.toLowerCase(Locale.ROOT)))));
             }
         }
 
@@ -311,6 +312,15 @@ public final class BossManager implements Listener {
         clearActive();
     }
 
+    private static long defaultTokens(String zone) {
+        return switch (zone) {
+            case "cellblock" -> 5; case "cafeteria" -> 8; case "laundry" -> 12;
+            case "infirmary" -> 18; case "yard" -> 25; case "sewers" -> 35;
+            case "lab" -> 50; case "quarantine" -> 70; case "subbasement" -> 100;
+            default -> 5;
+        };
+    }
+
     private void payout() {
         BossDef def = activeDef;
         Map<UUID, Long> shares = BossMath.split(damage, minShare * maxHealth, def.reward());
@@ -318,6 +328,8 @@ public final class BossManager implements Listener {
             say("&c[Boss] &f" + def.name() + " &7was defeated, but nobody earned a reward.");
             return;
         }
+        Map<UUID, Long> tokenShares = def.tokens() > 0
+                ? BossMath.split(damage, minShare * maxHealth, def.tokens()) : Map.of();
         double sum = 0;
         for (UUID id : shares.keySet()) sum += damage.getOrDefault(id, 0.0);
 
@@ -329,9 +341,12 @@ public final class BossManager implements Listener {
             if (name == null) continue;
             long amount = en.getValue();
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "eco give " + name + " " + amount);
+            long tok = tokenShares.getOrDefault(en.getKey(), 0L);
+            if (tok > 0) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "points give " + name + " " + tok);
             if (rank <= 10) {
                 int pct = (int) Math.round(100.0 * damage.getOrDefault(en.getKey(), 0.0) / sum);
-                say("&7 " + rank + ". &f" + name + " &7- " + pct + "% - &a$" + String.format("%,d", amount));
+                say("&7 " + rank + ". &f" + name + " &7- " + pct + "% - &a$" + String.format("%,d", amount)
+                        + (tok > 0 ? " &7+ &b" + tok + " Bio Tokens" : ""));
             }
             rank++;
         }
