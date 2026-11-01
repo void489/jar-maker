@@ -55,3 +55,8 @@ rank-bonus:
   percent-per-rank: 2.0
   # Permanent bonus per prestige level (prestige_1..prestige_10 LuckPerms groups).
   percent-per-prestige: 10.0
+
+# Chat line "[Prestige] [Rank] Name: message". Set enabled: false to keep your old chat format.
+chat:
+  enabled: true
+  format: "&#C084FC{prestige}&8[&f{rank}&8] &f"

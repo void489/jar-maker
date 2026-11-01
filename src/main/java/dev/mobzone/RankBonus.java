@@ -8,6 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,16 +38,21 @@ public class RankBonus implements Listener {
         if (sec != null) for (String k : sec.getKeys(false)) payouts.put(k.toLowerCase(Locale.ROOT), sec.getLong(k));
     }
 
-    /** A=1 ... Z=26, 0 if the player has no rank group. Uses LuckPerms group permissions (inherited). */
-    static int rankIndex(Player p) {
-        for (int i = 26; i >= 1; i--) {
-            if (p.hasPermission("group.rank_" + (char) ('a' + i - 1))) return i;
-        }
+    /** Explicitly held permission nodes only (so a wildcard '*' or OP does not count as every group). */
+    static java.util.Set<String> held(Player p) {
+        java.util.Set<String> out = new HashSet<>();
+        for (var i : p.getEffectivePermissions()) if (i.getValue()) out.add(i.getPermission().toLowerCase(Locale.ROOT));
+        return out;
+    }
+
+    /** A=1 ... Z=26, 0 if the player has no rank group. */
+    static int rankIndex(java.util.Set<String> perms) {
+        for (int i = 26; i >= 1; i--) if (perms.contains("group.rank_" + (char) ('a' + i - 1))) return i;
         return 0;
     }
 
-    static int prestige(Player p) {
-        for (int i = 10; i >= 1; i--) if (p.hasPermission("group.prestige_" + i)) return i;
+    static int prestige(java.util.Set<String> perms) {
+        for (int i = 10; i >= 1; i--) if (perms.contains("group.prestige_" + i)) return i;
         return 0;
     }
 
@@ -56,8 +62,9 @@ public class RankBonus implements Listener {
         if (!(e.getKiller() instanceof Player p)) return;
         Long base = payouts.get(e.getMobType().getInternalName().toLowerCase(Locale.ROOT));
         if (base == null) return;
-        int idx = rankIndex(p);
-        double pct = percentPerRank * Math.max(0, idx - 1) + percentPerPrestige * prestige(p);
+        var perms = held(p);
+        int idx = rankIndex(perms);
+        double pct = percentPerRank * Math.max(0, idx - 1) + percentPerPrestige * prestige(perms);
         long extra = Math.round(base * pct / 100.0);
         if (extra <= 0) return;
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "eco give " + p.getName() + " " + extra);

@@ -42,6 +42,7 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MobZoneListener(this), this);
         getServer().getPluginManager().registerEvents(boss, this);
         getServer().getPluginManager().registerEvents(rankBonus, this);
+        getServer().getPluginManager().registerEvents(chatFormat, this);
         MobZoneCommand cmd = new MobZoneCommand(this);
         var pc = getCommand("mobzone");
         if (pc != null) {
@@ -60,6 +61,7 @@ public final class MobZonePlugin extends JavaPlugin {
 
     private final NightVision nightVision = new NightVision(this);
     private final RankBonus rankBonus = new RankBonus(this);
+    private final ChatFormat chatFormat = new ChatFormat(this);
 
     public void reloadAll() {
         reloadConfig();
@@ -77,6 +79,7 @@ public final class MobZonePlugin extends JavaPlugin {
         boss.reload();
         nightVision.reload();
         rankBonus.reload();
+        chatFormat.reload();
     }
 
     public ZoneManager zones() { return zones; }
