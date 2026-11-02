@@ -59,6 +59,6 @@ Boss minions come from the boss's own summon skill, so they are not zone-tracked
 ## Map changes (2.1.0)
 After pasting a new map and fixing each zone's pos1/pos2 (`/mobzone create` or the zones: block):
 - `/mobzone update all preview`  shows where every spawner and boss would go (nothing is changed).
-- `/mobzone update all`          moves every spawner file + boss spot, then reloads MythicMobs. Only walkable, open floor is used.
+- `/mobzone update all`          moves every spawner file + boss spot, then reloads MythicMobs. Only ground-floor spots with real air above are used (never tables, catwalks or balconies).
 - `/mobzone update <zone>`       one zone only. If you stand inside it, your position is the starting point.
 - `/mobzone set spawner <name>` / `/mobzone set boss <zone>`   move one thing to where you stand.

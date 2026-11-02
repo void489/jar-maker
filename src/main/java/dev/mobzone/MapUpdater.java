@@ -88,7 +88,21 @@ final class MapUpdater {
             SpotPicker.Cell start = findStart(w, z, near);
             if (start == null) { out.add("&c" + z.name + ": no floor found inside the zone. Is the map pasted, and are pos1/pos2 right?"); continue; }
             Set<SpotPicker.Cell> reach = SpotPicker.flood(grid(w, z), start, 60000);
+            int walkable = reach.size();
             if (reach.size() < 50) { out.add("&c" + z.name + ": only " + reach.size() + " walkable blocks found, zone looks closed off."); continue; }
+            // ground floor only (most common floor height +-1), and real air at feet, head and above
+            java.util.Map<Integer, Integer> perY = new java.util.HashMap<>();
+            for (SpotPicker.Cell c : reach) perY.merge(c.y(), 1, Integer::sum);
+            int groundY = reach.iterator().next().y(), most = 0;
+            for (var e : perY.entrySet()) if (e.getValue() > most) { most = e.getValue(); groundY = e.getKey(); }
+            Set<SpotPicker.Cell> ground = new java.util.HashSet<>();
+            for (SpotPicker.Cell c : reach) {
+                if (Math.abs(c.y() - groundY) > 1) continue;
+                if (w.getBlockAt(c.x(), c.y(), c.z()).getType().isAir() && w.getBlockAt(c.x(), c.y() + 1, c.z()).getType().isAir()
+                        && w.getBlockAt(c.x(), c.y() + 2, c.z()).getType().isAir()) ground.add(c);
+            }
+            if (ground.size() < 50) { out.add("&e" + z.name + ": little open ground floor found, using all walkable spots."); ground = reach; }
+            reach = ground;
             boolean hasBoss = plugin.getConfig().isConfigurationSection("boss.bosses." + z.name);
             List<SpotPicker.Cell> avoid = new ArrayList<>();
             SpotPicker.Cell boss = null;
@@ -98,7 +112,7 @@ final class MapUpdater {
             }
             List<String> names = new ArrayList<>(z.spawners);
             List<SpotPicker.Cell> spots = SpotPicker.pick(reach, names.size(), avoid, z.name.hashCode(), 30, new int[]{16, 10, 6, 0});
-            StringBuilder sb = new StringBuilder("&a" + z.name + "&7 (" + reach.size() + " walkable): ");
+            StringBuilder sb = new StringBuilder("&a" + z.name + "&7 (" + reach.size() + " ground spots): ");
             for (int i = 0; i < names.size(); i++) {
                 SpotPicker.Cell c = spots.get(i);
                 sb.append(names.get(i)).append(' ').append(c.x()).append(' ').append(c.y()).append(' ').append(c.z()).append("  ");
