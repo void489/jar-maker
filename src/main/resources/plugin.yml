@@ -7,7 +7,7 @@ description: Keeps MythicMobs spawner mobs inside cuboid zones.
 commands:
   mobzone:
     description: Manage mob zones
-    usage: /mobzone <pos1|pos2|create|delete|list|info|addspawner|removespawner|reload>
+    usage: /mobzone <pos1|pos2|create|delete|list|info|addspawner|removespawner|update|set|reload>
     aliases: [mz]
   quests:
     description: Show your daily quests

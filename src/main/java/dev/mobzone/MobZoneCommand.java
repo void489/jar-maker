@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "event");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "event", "update", "set");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -194,6 +194,26 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                         + " group-rank=" + RankBonus.rankIndex(perms) + " group-prestige=" + RankBonus.prestige(perms),
                         NamedTextColor.YELLOW);
             }
+            case "update" -> {
+                if (a.length < 2) {
+                    say(sender, "/mobzone update <zone|all> [preview]   (re-places spawners + boss on walkable floor)", NamedTextColor.YELLOW);
+                    return true;
+                }
+                boolean preview = a.length > 2 && a[2].equalsIgnoreCase("preview");
+                Player near = sender instanceof Player pp ? pp : null;
+                for (String line : new MapUpdater(plugin).update(a[1], near, !preview)) Util.tell(sender, line);
+            }
+            case "set" -> {
+                if (!(sender instanceof Player p) || a.length < 3) {
+                    say(sender, "/mobzone set spawner <name>   or   /mobzone set boss <zone>   (stand where you want it, players only)", NamedTextColor.YELLOW);
+                    return true;
+                }
+                MapUpdater mu = new MapUpdater(plugin);
+                boolean ok = a[1].equalsIgnoreCase("boss") ? mu.setBoss(a[2], p.getLocation())
+                        : a[1].equalsIgnoreCase("spawner") && mu.setSpawner(a[2], p.getLocation());
+                say(sender, ok ? "Moved " + a[2] + " to your position." : "Could not find that " + a[1] + ".",
+                        ok ? NamedTextColor.GREEN : NamedTextColor.RED);
+            }
             case "reload" -> {
                 plugin.reloadAll();
                 say(sender, "MobZone reloaded.", NamedTextColor.GREEN);
@@ -223,6 +243,14 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
             }
             return out;
         }
+        if (sub.equals("update") && a.length == 2) {
+            out.add("all");
+            for (Zone z : plugin.zones().all()) out.add(z.name);
+            out.removeIf(s -> !s.startsWith(a[1].toLowerCase(Locale.ROOT)));
+            return out;
+        }
+        if (sub.equals("update") && a.length == 3) return List.of("preview");
+        if (sub.equals("set") && a.length == 2) return List.of("spawner", "boss");
         if (a.length == 2 && List.of("delete", "info", "addspawner", "removespawner").contains(sub)) {
             for (Zone z : plugin.zones().all())
                 if (z.name.toLowerCase(Locale.ROOT).startsWith(a[1].toLowerCase(Locale.ROOT))) out.add(z.name);
