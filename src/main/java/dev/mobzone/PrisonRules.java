@@ -14,6 +14,12 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
+import org.bukkit.event.block.Action;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
@@ -33,6 +39,8 @@ import java.util.UUID;
 public final class PrisonRules implements Listener {
     private final MobZonePlugin plugin;
     private final Map<UUID, List<ItemStack>> kept = new HashMap<>();
+    private final Map<UUID, Long> menuCooldown = new HashMap<>();
+    private boolean cleaving;
 
     public PrisonRules(MobZonePlugin plugin) { this.plugin = plugin; }
 
@@ -133,5 +141,40 @@ public final class PrisonRules implements Listener {
                 if (z.getVehicle() instanceof Chicken c) { z.leaveVehicle(); c.remove(); }
             });
         }
+    }
+
+    // ---- right-click the Prison Blade = open the sword enchant menu
+    @EventHandler
+    public void onRightClick(PlayerInteractEvent e) {
+        if (e.getHand() != EquipmentSlot.HAND) return;
+        if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Player p = e.getPlayer();
+        if (p.isSneaking() || !locked(p.getInventory().getItemInMainHand())) return;
+        if (!plugin.getConfig().getBoolean("sword-menu.enabled", true)) return;
+        long now = System.currentTimeMillis();
+        if (now - menuCooldown.getOrDefault(p.getUniqueId(), 0L) < 800) return;
+        menuCooldown.put(p.getUniqueId(), now);
+        p.performCommand(plugin.getConfig().getString("sword-menu.command", "enchants"));
+    }
+
+    // ---- cleave: the Prison Blade also hits up to 2 nearby monsters for half damage
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onHit(EntityDamageByEntityEvent e) {
+        if (cleaving || !(e.getDamager() instanceof Player p) || !(e.getEntity() instanceof Monster hit)) return;
+        if (!plugin.getConfig().getBoolean("cleave.enabled", true) || !worldOn("cleave", p.getWorld())) return;
+        if (!locked(p.getInventory().getItemInMainHand())) return;
+        double radius = plugin.getConfig().getDouble("cleave.radius", 3.0);
+        int extra = plugin.getConfig().getInt("cleave.extra-targets", 2);
+        double share = plugin.getConfig().getDouble("cleave.damage-share", 0.5);
+        double dmg = e.getFinalDamage() * share;
+        if (dmg <= 0) return;
+        cleaving = true;
+        try {
+            int n = 0;
+            for (Entity ent : hit.getNearbyEntities(radius, 1.5, radius)) {
+                if (n >= extra) break;
+                if (ent instanceof Monster m && m.isValid() && !m.equals(hit)) { m.damage(dmg, p); n++; }
+            }
+        } finally { cleaving = false; }
     }
 }

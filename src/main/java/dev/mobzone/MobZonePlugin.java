@@ -64,12 +64,14 @@ public final class MobZonePlugin extends JavaPlugin {
         if (task != null) task.cancel();
         boss.shutdown();
         nightVision.shutdown();
+        killTracker.stop();
         quests.shutdown();
         events.shutdown();
         tracked.clear();
     }
 
     private final NightVision nightVision = new NightVision(this);
+    private final KillTracker killTracker = new KillTracker(this);
     private final RankBonus rankBonus = new RankBonus(this);
     private final ChatFormat chatFormat = new ChatFormat(this);
     private final CrateManager crates = new CrateManager(this);
@@ -97,6 +99,7 @@ public final class MobZonePlugin extends JavaPlugin {
         task = getServer().getScheduler().runTaskTimer(this, this::sweep, intervalTicks, intervalTicks);
         boss.reload();
         nightVision.reload();
+        killTracker.reload();
         rankBonus.reload();
         chatFormat.reload();
         crates.reload();

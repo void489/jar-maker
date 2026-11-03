@@ -103,22 +103,38 @@ crates:
 # type: kills (any zombie), mob (a specific MythicMobs name), boss (take part in a boss fight).
 quests:
   enabled: true
-  per-day: 3
+  per-day: 4
   pool:
+    - {id: kills_50, desc: "Kill 50 zombies", type: kills, target: 50, cash: 10000, tokens: 1, min-kills: 0}
     - {id: kills_100, desc: "Kill 100 zombies", type: kills, target: 100, cash: 20000, tokens: 2, min-kills: 0}
-    - {id: kills_300, desc: "Kill 300 zombies", type: kills, target: 300, cash: 100000, tokens: 4, min-kills: 600}
-    - {id: kills_800, desc: "Kill 800 zombies", type: kills, target: 800, cash: 500000, tokens: 8, min-kills: 3000}
-    - {id: kills_2000, desc: "Kill 2,000 zombies", type: kills, target: 2000, cash: 3000000, tokens: 15, min-kills: 13500}
+    - {id: kills_200, desc: "Kill 200 zombies", type: kills, target: 200, cash: 60000, tokens: 3, min-kills: 100}
+    - {id: kills_400, desc: "Kill 400 zombies", type: kills, target: 400, cash: 150000, tokens: 4, min-kills: 300}
+    - {id: kills_800, desc: "Kill 800 zombies", type: kills, target: 800, cash: 500000, tokens: 8, min-kills: 1500}
+    - {id: kills_1500, desc: "Kill 1,500 zombies", type: kills, target: 1500, cash: 1500000, tokens: 12, min-kills: 3500}
+    - {id: kills_3000, desc: "Kill 3,000 zombies", type: kills, target: 3000, cash: 5000000, tokens: 20, min-kills: 12000}
+    - {id: walker_30, desc: "Kill 30 Walkers", type: mob, mob: Walker, target: 30, cash: 8000, tokens: 1, min-kills: 0}
     - {id: walker_60, desc: "Kill 60 Walkers", type: mob, mob: Walker, target: 60, cash: 15000, tokens: 2, min-kills: 0}
+    - {id: runner_20, desc: "Kill 20 Runners", type: mob, mob: Runner, target: 20, cash: 8000, tokens: 1, min-kills: 0}
     - {id: runner_40, desc: "Kill 40 Runners", type: mob, mob: Runner, target: 40, cash: 15000, tokens: 2, min-kills: 0}
-    - {id: brute_40, desc: "Kill 40 Brutes", type: mob, mob: Brute, target: 40, cash: 60000, tokens: 3, min-kills: 175}
-    - {id: cook_40, desc: "Kill 40 Cooks", type: mob, mob: Cook, target: 40, cash: 100000, tokens: 3, min-kills: 600}
-    - {id: stoker_40, desc: "Kill 40 Stokers", type: mob, mob: Stoker, target: 40, cash: 200000, tokens: 4, min-kills: 1500}
-    - {id: spitter_40, desc: "Kill 40 Spitters", type: mob, mob: Spitter, target: 40, cash: 400000, tokens: 5, min-kills: 3200}
-    - {id: guard_40, desc: "Kill 40 Guards", type: mob, mob: Guard, target: 40, cash: 800000, tokens: 6, min-kills: 8000}
-    - {id: mutant_30, desc: "Kill 30 Mutants", type: mob, mob: Mutant, target: 30, cash: 2000000, tokens: 8, min-kills: 27000}
-    - {id: elite_25, desc: "Kill 25 Elites", type: mob, mob: Elite, target: 25, cash: 5000000, tokens: 12, min-kills: 88000}
-    - {id: boss_1, desc: "Take part in a boss fight", type: boss, target: 1, cash: 100000, tokens: 5, min-kills: 175}
+    - {id: brute_20, desc: "Kill 20 Brutes", type: mob, mob: Brute, target: 20, cash: 30000, tokens: 2, min-kills: 100}
+    - {id: brute_40, desc: "Kill 40 Brutes", type: mob, mob: Brute, target: 40, cash: 60000, tokens: 3, min-kills: 100}
+    - {id: cook_20, desc: "Kill 20 Cooks", type: mob, mob: Cook, target: 20, cash: 50000, tokens: 2, min-kills: 300}
+    - {id: cook_40, desc: "Kill 40 Cooks", type: mob, mob: Cook, target: 40, cash: 100000, tokens: 3, min-kills: 300}
+    - {id: exploder_25, desc: "Kill 25 Exploders", type: mob, mob: Exploder, target: 25, cash: 90000, tokens: 3, min-kills: 700}
+    - {id: stoker_40, desc: "Kill 40 Stokers", type: mob, mob: Stoker, target: 40, cash: 200000, tokens: 4, min-kills: 700}
+    - {id: spitter_25, desc: "Kill 25 Spitters", type: mob, mob: Spitter, target: 25, cash: 250000, tokens: 4, min-kills: 1500}
+    - {id: spitter_40, desc: "Kill 40 Spitters", type: mob, mob: Spitter, target: 40, cash: 400000, tokens: 5, min-kills: 1500}
+    - {id: scientist_30, desc: "Kill 30 Scientists", type: mob, mob: Scientist, target: 30, cash: 350000, tokens: 5, min-kills: 1500}
+    - {id: guard_25, desc: "Kill 25 Guards", type: mob, mob: Guard, target: 25, cash: 500000, tokens: 5, min-kills: 3500}
+    - {id: guard_40, desc: "Kill 40 Guards", type: mob, mob: Guard, target: 40, cash: 800000, tokens: 6, min-kills: 3500}
+    - {id: crawler_40, desc: "Kill 40 Crawlers", type: mob, mob: Crawler, target: 40, cash: 1000000, tokens: 7, min-kills: 6000}
+    - {id: mutant_20, desc: "Kill 20 Mutants", type: mob, mob: Mutant, target: 20, cash: 1500000, tokens: 6, min-kills: 12000}
+    - {id: mutant_30, desc: "Kill 30 Mutants", type: mob, mob: Mutant, target: 30, cash: 2000000, tokens: 8, min-kills: 12000}
+    - {id: hazmat_30, desc: "Kill 30 Hazmat Zombies", type: mob, mob: Hazmat, target: 30, cash: 3000000, tokens: 10, min-kills: 22000}
+    - {id: elite_15, desc: "Kill 15 Elites", type: mob, mob: Elite, target: 15, cash: 4000000, tokens: 10, min-kills: 40000}
+    - {id: elite_25, desc: "Kill 25 Elites", type: mob, mob: Elite, target: 25, cash: 5000000, tokens: 12, min-kills: 40000}
+    - {id: boss_1, desc: "Take part in a boss fight", type: boss, target: 1, cash: 100000, tokens: 5, min-kills: 100}
+    - {id: boss_2, desc: "Take part in 2 boss fights", type: boss, target: 2, cash: 300000, tokens: 10, min-kills: 700}
 
 # ---------------------------------------------------------------- timed events
 # Every interval-minutes a random event starts and runs for duration-minutes (only if players are online).

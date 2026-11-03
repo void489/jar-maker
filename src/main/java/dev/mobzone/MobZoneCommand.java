@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "event", "update", "set", "restore");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "event", "update", "set", "restore", "tune");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -210,6 +210,20 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                 }
                 Player near = sender instanceof Player pp ? pp : null;
                 for (String line : new MapUpdater(plugin).update(a[1], near, !preview, forceY)) Util.tell(sender, line);
+            }
+            case "tune" -> {
+                if (a.length < 5) { say(sender, "/mobzone tune <zone|all> <mobsPerSpawn> <maxMobs> <cooldown>   (changes the zone's spawners through MythicMobs)", NamedTextColor.YELLOW); return true; }
+                int n = 0;
+                for (Zone z : zm.all()) {
+                    if (!a[1].equalsIgnoreCase("all") && !z.name.equalsIgnoreCase(a[1])) continue;
+                    for (String sp : z.spawners) {
+                        Util.console("mm s set " + sp + " MobsPerSpawn " + a[2]);
+                        Util.console("mm s set " + sp + " MaxMobs " + a[3]);
+                        Util.console("mm s set " + sp + " Cooldown " + a[4]);
+                        n++;
+                    }
+                }
+                say(sender, n == 0 ? "No such zone." : "Sent settings to " + n + " spawners. Check the console for any 'invalid' messages.", n == 0 ? NamedTextColor.RED : NamedTextColor.GREEN);
             }
             case "restore" -> {
                 if (a.length < 2) { say(sender, "/mobzone restore <player> [sword|armor|all]   (gives their gear back at their saved levels)", NamedTextColor.YELLOW); return true; }
