@@ -196,12 +196,20 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
             }
             case "update" -> {
                 if (a.length < 2) {
-                    say(sender, "/mobzone update <zone|all> [preview]   (re-places spawners + boss on walkable floor)", NamedTextColor.YELLOW);
+                    say(sender, "/mobzone update <zone|all> [preview] [y=104]   (y= = floor height where mobs stand)", NamedTextColor.YELLOW);
                     return true;
                 }
-                boolean preview = a.length > 2 && a[2].equalsIgnoreCase("preview");
+                boolean preview = false;
+                Integer forceY = null;
+                for (int i = 2; i < a.length; i++) {
+                    if (a[i].equalsIgnoreCase("preview")) preview = true;
+                    else if (a[i].toLowerCase(Locale.ROOT).startsWith("y=")) {
+                        try { forceY = Integer.parseInt(a[i].substring(2)); }
+                        catch (NumberFormatException ex) { say(sender, "y= must be a whole number, e.g. y=104", NamedTextColor.RED); return true; }
+                    }
+                }
                 Player near = sender instanceof Player pp ? pp : null;
-                for (String line : new MapUpdater(plugin).update(a[1], near, !preview)) Util.tell(sender, line);
+                for (String line : new MapUpdater(plugin).update(a[1], near, !preview, forceY)) Util.tell(sender, line);
             }
             case "set" -> {
                 if (!(sender instanceof Player p) || a.length < 3) {
@@ -249,7 +257,7 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
             out.removeIf(s -> !s.startsWith(a[1].toLowerCase(Locale.ROOT)));
             return out;
         }
-        if (sub.equals("update") && a.length == 3) return List.of("preview");
+        if (sub.equals("update") && a.length >= 3) return List.of("preview", "y=");
         if (sub.equals("set") && a.length == 2) return List.of("spawner", "boss");
         if (a.length == 2 && List.of("delete", "info", "addspawner", "removespawner").contains(sub)) {
             for (Zone z : plugin.zones().all())

@@ -78,7 +78,7 @@ final class MapUpdater {
     }
 
     /** which = zone name or "all". Returns lines for the sender. */
-    List<String> update(String which, Player near, boolean apply) {
+    List<String> update(String which, Player near, boolean apply, Integer forceY) {
         List<String> out = new ArrayList<>();
         boolean touchedSpawners = false, touchedBoss = false;
         for (Zone z : plugin.zones().all()) {
@@ -95,12 +95,14 @@ final class MapUpdater {
             for (SpotPicker.Cell c : reach) perY.merge(c.y(), 1, Integer::sum);
             int groundY = reach.iterator().next().y(), most = 0;
             for (var e : perY.entrySet()) if (e.getValue() > most) { most = e.getValue(); groundY = e.getKey(); }
+            if (forceY != null) groundY = forceY;
             Set<SpotPicker.Cell> ground = new java.util.HashSet<>();
             for (SpotPicker.Cell c : reach) {
                 if (Math.abs(c.y() - groundY) > 1) continue;
                 if (w.getBlockAt(c.x(), c.y(), c.z()).getType().isAir() && w.getBlockAt(c.x(), c.y() + 1, c.z()).getType().isAir()
                         && w.getBlockAt(c.x(), c.y() + 2, c.z()).getType().isAir()) ground.add(c);
             }
+            if (forceY != null && ground.size() < 20) { out.add("&c" + z.name + ": almost no open floor at y=" + forceY + " (found " + ground.size() + "). Check the zone pos1/pos2 and that the map is pasted."); continue; }
             if (ground.size() < 50) { out.add("&e" + z.name + ": little open ground floor found, using all walkable spots."); ground = reach; }
             reach = ground;
             boolean hasBoss = plugin.getConfig().isConfigurationSection("boss.bosses." + z.name);
@@ -117,8 +119,8 @@ final class MapUpdater {
                 SpotPicker.Cell c = spots.get(i);
                 sb.append(names.get(i)).append(' ').append(c.x()).append(' ').append(c.y()).append(' ').append(c.z()).append("  ");
                 if (apply) {
-                    if (writeSpawner(names.get(i), z.world, c.x(), c.y(), c.z())) touchedSpawners = true;
-                    else out.add("&c  spawner file for '" + names.get(i) + "' not found in plugins/MythicMobs.");
+                    String err = moveSpawner(names.get(i), z.world, c.x(), c.y(), c.z());
+                    if (err == null) touchedSpawners = true; else out.add("&c  " + names.get(i) + ": " + err);
                 }
             }
             if (boss != null) {
@@ -135,16 +137,14 @@ final class MapUpdater {
         if (out.isEmpty()) out.add("&cNo zone matches '" + which + "'. Use /mobzone list.");
         if (apply) {
             if (touchedBoss) { plugin.saveConfig(); plugin.boss().reload(); }
-            if (touchedSpawners) { Util.console("mm reload"); out.add("&aSpawner files updated and MythicMobs reloaded."); }
+            if (touchedSpawners) out.add("&aSpawners moved inside MythicMobs (no reload needed).");
         } else out.add("&ePreview only. Run /mobzone update " + which + " to apply.");
         return out;
     }
 
     /** Move one spawner to a location (for /mobzone set spawner). */
     boolean setSpawner(String name, Location l) {
-        boolean ok = writeSpawner(name, l.getWorld().getName(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
-        if (ok) Util.console("mm reload");
-        return ok;
+        return moveSpawner(name, l.getWorld().getName(), l.getBlockX(), l.getBlockY(), l.getBlockZ()) == null;
     }
 
     boolean setBoss(String zone, Location l) {
@@ -157,27 +157,31 @@ final class MapUpdater {
         return true;
     }
 
-    private boolean writeSpawner(String name, String world, int px, int py, int pz) {
-        File root = new File(plugin.getDataFolder().getParentFile(), "MythicMobs");
-        if (!root.isDirectory()) return false;
-        List<Path> files = new ArrayList<>();
-        try (Stream<Path> s = Files.walk(root.toPath())) {
-            s.filter(p -> p.toString().toLowerCase(Locale.ROOT).endsWith(".yml"))
-             .filter(p -> { for (Path part : p) if (part.toString().equalsIgnoreCase("spawners")) return true; return false; })
-             .forEach(files::add);
-        } catch (IOException e) { return false; }
-        for (Path p : files) {
-            YamlConfiguration cfg = YamlConfiguration.loadConfiguration(p.toFile());
-            for (String key : cfg.getKeys(false)) {
-                if (!key.equalsIgnoreCase(name)) continue;
-                cfg.set(key + ".World", world);
-                cfg.set(key + ".X", px);
-                cfg.set(key + ".Y", py);
-                cfg.set(key + ".Z", pz);
-                try { cfg.save(p.toFile()); } catch (IOException e) { return false; }
-                return true;
-            }
+    /** Moves a spawner through the MythicMobs API (so MythicMobs saves it itself). Returns null on success, else an error text. */
+    private String moveSpawner(String name, String world, int px, int py, int pz) {
+        try {
+            Object mm = io.lumine.mythic.bukkit.MythicBukkit.inst();
+            Object mgr = mm.getClass().getMethod("getSpawnerManager").invoke(mm);
+            Object sp = mgr.getClass().getMethod("getSpawnerByName", String.class).invoke(mgr, name);
+            if (sp == null) return "spawner not found in MythicMobs";
+            Location loc = new Location(Bukkit.getWorld(world), px + 0.5, py, pz + 0.5);
+            Object abs = io.lumine.mythic.bukkit.BukkitAdapter.adapt(loc);
+            invoke1(sp, "setWorld", world);
+            invoke1(sp, "setLocation", abs);
+            try { sp.getClass().getMethod("reattachToWorld").invoke(sp); } catch (NoSuchMethodException ignored) { }
+            try { sp.getClass().getMethod("saveSpawnerData").invoke(sp); } catch (NoSuchMethodException ignored) { }
+            return null;
+        } catch (Exception e) {
+            return "could not move it (" + e.getClass().getSimpleName() + ": " + e.getMessage() + ")";
         }
-        return false;
+    }
+
+    private static void invoke1(Object target, String method, Object arg) throws Exception {
+        for (java.lang.reflect.Method m : target.getClass().getMethods())
+            if (m.getName().equals(method) && m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(arg.getClass())) {
+                m.invoke(target, arg);
+                return;
+            }
+        throw new NoSuchMethodException(method);
     }
 }

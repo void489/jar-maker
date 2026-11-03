@@ -62,3 +62,6 @@ After pasting a new map and fixing each zone's pos1/pos2 (`/mobzone create` or t
 - `/mobzone update all`          moves every spawner file + boss spot, then reloads MythicMobs. Only ground-floor spots with real air above are used (never tables, catwalks or balconies).
 - `/mobzone update <zone>`       one zone only. If you stand inside it, your position is the starting point.
 - `/mobzone set spawner <name>` / `/mobzone set boss <zone>`   move one thing to where you stand.
+
+- Add `y=104` (your floor height, the Y you see in F3 while standing on the floor) so spawners can never end up underground: `/mobzone update all y=104`.
+- Spawners are moved through MythicMobs itself (not by editing files), so MythicMobs can't overwrite them.
