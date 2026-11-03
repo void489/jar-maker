@@ -25,7 +25,7 @@ public class JoinWelcome implements Listener {
         List<String> lines = c.getStringList("welcome.messages");
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!p.isOnline()) return;
-            p.showTitle(Title.title(Util.c(c.getString("welcome.title", "&#A855F7&lWELCOME")),
+            p.showTitle(Title.title(Util.c(c.getString("welcome.title", "&#A3E635&lWELCOME")),
                     Util.c(c.getString("welcome.subtitle", "&7Survive the Dead Cell Block")), Title.DEFAULT_TIMES));
             for (String l : lines) p.sendMessage(Util.c(l.replace("{player}", p.getName())));
             if (c.getBoolean("welcome.open-guide", true)) Util.console("dm open guide " + p.getName());

@@ -62,7 +62,7 @@ rank-bonus:
 # Chat line "[Prestige] Name: message". Your rank letter already comes from your prefix. Use {rank} here to add it again. enabled: false keeps the old chat format.
 chat:
   enabled: true
-  format: "&#C084FC{prestige}"
+  format: "&#4ADE80{prestige}"
 
 # ---------------------------------------------------------------- crates
 # Players open these from /crates (Bio Tokens). Reward types: cash, tokens, booster, command.
@@ -152,10 +152,10 @@ events:
 welcome:
   enabled: true
   open-guide: true
-  title: "&#A855F7&lWELCOME"
+  title: "&#A3E635&lWELCOME"
   subtitle: "&7Survive the Dead Cell Block"
   messages:
-    - "&#A855F7&lWelcome, {player}!"
+    - "&#A3E635&lWelcome, {player}!"
     - "&7Kill zombies for cash, then &f/rankup &7to climb."
     - "&7Type &f/guide &7any time to see your next step."
 

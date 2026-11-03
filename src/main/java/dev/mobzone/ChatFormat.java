@@ -26,7 +26,7 @@ public class ChatFormat implements Listener {
     public void reload() {
         var c = plugin.getConfig();
         enabled = c.getBoolean("chat.enabled", true);
-        prefix = c.getString("chat.format", "&#C084FC{prestige}");
+        prefix = c.getString("chat.format", "&#4ADE80{prestige}");
         titles = c.getStringList("chat.prestige-titles");
         if (titles.isEmpty()) titles = List.of("Survivor", "Scavenger", "Hunter", "Slayer", "Warden",
                 "Reaper", "Warlord", "Overlord", "Immortal", "Apex");

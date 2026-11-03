@@ -73,9 +73,9 @@ public class CrateManager {
         Reward r = c.rewards().get(CrateMath.pick(c.weights(), ThreadLocalRandom.current().nextDouble()));
         String text = r.text().isEmpty() ? describe(r) : r.text();
         give(p, r);
-        Util.tell(p, "&#A855F7[Crate] &7You opened " + c.name() + "&7 and won &f" + text + "&7!");
+        Util.tell(p, "&#A3E635[Crate] &7You opened " + c.name() + "&7 and won &f" + text + "&7!");
         if (r.broadcast())
-            Util.broadcast("&#A855F7[Crate] &f" + p.getName() + " &7won &f" + text + " &7from " + c.name() + "&7!");
+            Util.broadcast("&#A3E635[Crate] &f" + p.getName() + " &7won &f" + text + " &7from " + c.name() + "&7!");
     }
 
     private static String describe(Reward r) {

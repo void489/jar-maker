@@ -141,7 +141,7 @@ public class QuestManager implements Listener {
                 d.done.set(i, true);
                 if (q.cash() > 0) Util.console("eco give " + p.getName() + " " + q.cash());
                 if (q.tokens() > 0) Util.console("points give " + p.getName() + " " + q.tokens());
-                Util.tell(p, "&#A855F7[Quest] &aCompleted: &f" + q.desc() + " &7- &a$" + Util.money(q.cash())
+                Util.tell(p, "&#A3E635[Quest] &aCompleted: &f" + q.desc() + " &7- &a$" + Util.money(q.cash())
                         + (q.tokens() > 0 ? " &7+ &b" + q.tokens() + " Bio Tokens" : ""));
             }
         }
@@ -164,7 +164,7 @@ public class QuestManager implements Listener {
     public void show(Player p) {
         if (!enabled) { Util.tell(p, "&cQuests are turned off."); return; }
         Daily d = ensure(p);
-        Util.tell(p, "&#A855F7&lDaily Quests &8- &7reset at midnight (server time)");
+        Util.tell(p, "&#A3E635&lDaily Quests &8- &7reset at midnight (server time)");
         for (int i = 0; i < d.ids.size(); i++) {
             Def q = pool.get(d.ids.get(i));
             if (q == null) continue;

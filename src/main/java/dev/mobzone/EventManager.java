@@ -67,13 +67,13 @@ public class EventManager {
     private void start(Def d, long ms) {
         active = d;
         endsAt = System.currentTimeMillis() + ms;
-        Util.broadcast("&#A855F7&l[Event] " + d.name() + " &7has started for &f" + (ms / 60_000L) + " minutes&7! "
+        Util.broadcast("&#A3E635&l[Event] " + d.name() + " &7has started for &f" + (ms / 60_000L) + " minutes&7! "
                 + describe(d));
     }
 
     public void stop(boolean announce) {
         if (active == null) return;
-        if (announce) Util.broadcast("&#A855F7&l[Event] " + active.name() + " &7has ended.");
+        if (announce) Util.broadcast("&#A3E635&l[Event] " + active.name() + " &7has ended.");
         active = null;
         nextAt = System.currentTimeMillis() + intervalMs;
     }
@@ -94,8 +94,8 @@ public class EventManager {
     public String status() {
         long now = System.currentTimeMillis();
         if (active != null)
-            return "&#A855F7[Event] " + active.name() + " &7is live! " + describe(active) + " &8(" + Math.max(1, (endsAt - now) / 60_000L) + " min left)";
-        if (!enabled) return "&#A855F7[Event] &7Events are off.";
-        return "&#A855F7[Event] &7No event right now. Next one in about &f" + Math.max(1, (nextAt - now) / 60_000L) + " minutes&7.";
+            return "&#A3E635[Event] " + active.name() + " &7is live! " + describe(active) + " &8(" + Math.max(1, (endsAt - now) / 60_000L) + " min left)";
+        if (!enabled) return "&#A3E635[Event] &7Events are off.";
+        return "&#A3E635[Event] &7No event right now. Next one in about &f" + Math.max(1, (nextAt - now) / 60_000L) + " minutes&7.";
     }
 }
