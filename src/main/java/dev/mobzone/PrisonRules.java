@@ -21,6 +21,7 @@ import org.bukkit.entity.Monster;
 import org.bukkit.event.block.Action;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
@@ -76,10 +77,16 @@ public final class PrisonRules implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
+        if (plugin.getConfig().getBoolean("hide-join-quit", true)) e.joinMessage(null);
         if (worldOn("no-hunger", p.getWorld())) { p.setFoodLevel(20); p.setSaturation(20f); }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onQuit(PlayerQuitEvent e) {
+        if (plugin.getConfig().getBoolean("hide-join-quit", true)) e.quitMessage(null);
     }
 
     // ---- sword lock

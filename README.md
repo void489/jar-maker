@@ -78,3 +78,5 @@ After pasting a new map and fixing each zone's pos1/pos2 (`/mobzone create` or t
 - Right-click the Prison Blade (not sneaking) opens `/enchants`. Config: `sword-menu: {enabled: true, command: blade}`.
 - Cleave: the Prison Blade also hits up to 2 nearby monsters for 50% damage. Config: `cleave: {enabled: true, radius: 3.0, extra-targets: 2, damage-share: 0.5}`.
 - `/mobzone tune <zone|all> <mobsPerSpawn> <maxMobs> <cooldown>` changes spawners through `/mm s set`.
+
+- Join and quit messages are hidden (`hide-join-quit: true`, set false to show them again).
