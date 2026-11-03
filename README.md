@@ -65,3 +65,10 @@ After pasting a new map and fixing each zone's pos1/pos2 (`/mobzone create` or t
 
 - Add `y=104` (your floor height, the Y you see in F3 while standing on the floor) so spawners can never end up underground: `/mobzone update all y=104`.
 - Spawners are moved through MythicMobs itself (not by editing files), so MythicMobs can't overwrite them.
+
+## Prison rules (2.2.0)
+- No hunger loss in the prison world. Chicken jockeys are removed. The 'Prison Blade' can't be dropped, moved or lost on death.
+- Defaults need no config. Optional: `no-hunger: {enabled: true, worlds: [prison]}`, `no-chicken-jockeys: {enabled: true}`, `locked-items: {names: ["Prison Blade"]}`. Admins with `mobzone.bypasslock` can move the sword.
+
+## Gear repair (2.3.0)
+`/mobzone restore <player> [sword|armor|all]` replaces the sword and/or armor with fresh ones enchanted to the player's saved levels (LuckPerms meta). Upgrade levels are never reset. Ignores kit limits.

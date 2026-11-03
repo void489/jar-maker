@@ -40,6 +40,7 @@ public final class MobZonePlugin extends JavaPlugin {
         reloadAll();
 
         getServer().getPluginManager().registerEvents(new MobZoneListener(this), this);
+        getServer().getPluginManager().registerEvents(new PrisonRules(this), this);
         getServer().getPluginManager().registerEvents(boss, this);
         getServer().getPluginManager().registerEvents(rankBonus, this);
         getServer().getPluginManager().registerEvents(chatFormat, this);

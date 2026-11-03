@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "event", "update", "set");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "event", "update", "set", "restore");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -211,6 +211,14 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                 Player near = sender instanceof Player pp ? pp : null;
                 for (String line : new MapUpdater(plugin).update(a[1], near, !preview, forceY)) Util.tell(sender, line);
             }
+            case "restore" -> {
+                if (a.length < 2) { say(sender, "/mobzone restore <player> [sword|armor|all]   (gives their gear back at their saved levels)", NamedTextColor.YELLOW); return true; }
+                Player t = org.bukkit.Bukkit.getPlayerExact(a[1]);
+                if (t == null) { say(sender, "That player isn't online.", NamedTextColor.RED); return true; }
+                String what = a.length > 2 ? a[2].toLowerCase(Locale.ROOT) : "all";
+                if (!List.of("sword", "armor", "all").contains(what)) { say(sender, "Use sword, armor or all.", NamedTextColor.RED); return true; }
+                for (String line : GearRestore.run(t, what)) Util.tell(sender, line);
+            }
             case "set" -> {
                 if (!(sender instanceof Player p) || a.length < 3) {
                     say(sender, "/mobzone set spawner <name>   or   /mobzone set boss <zone>   (stand where you want it, players only)", NamedTextColor.YELLOW);
@@ -259,6 +267,7 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
         }
         if (sub.equals("update") && a.length >= 3) return List.of("preview", "y=");
         if (sub.equals("set") && a.length == 2) return List.of("spawner", "boss");
+        if (sub.equals("restore") && a.length == 3) return List.of("sword", "armor", "all");
         if (a.length == 2 && List.of("delete", "info", "addspawner", "removespawner").contains(sub)) {
             for (Zone z : plugin.zones().all())
                 if (z.name.toLowerCase(Locale.ROOT).startsWith(a[1].toLowerCase(Locale.ROOT))) out.add(z.name);
