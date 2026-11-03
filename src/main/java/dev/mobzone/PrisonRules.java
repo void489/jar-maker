@@ -154,7 +154,7 @@ public final class PrisonRules implements Listener {
         long now = System.currentTimeMillis();
         if (now - menuCooldown.getOrDefault(p.getUniqueId(), 0L) < 800) return;
         menuCooldown.put(p.getUniqueId(), now);
-        p.performCommand(plugin.getConfig().getString("sword-menu.command", "enchants"));
+        p.performCommand(plugin.getConfig().getString("sword-menu.command", "blade"));
     }
 
     // ---- cleave: the Prison Blade also hits up to 2 nearby monsters for half damage

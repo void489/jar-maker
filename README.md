@@ -75,6 +75,6 @@ After pasting a new map and fixing each zone's pos1/pos2 (`/mobzone create` or t
 
 ## Beta feedback update (2.4.0)
 - Boss bar tracker: "Next zone: Cell Block | 62/100 kills" (purple bar fills up). Reads the `kills` scoreboard objective. Off with `tracker: {enabled: false}`.
-- Right-click the Prison Blade (not sneaking) opens `/enchants`. Config: `sword-menu: {enabled: true, command: enchants}`.
+- Right-click the Prison Blade (not sneaking) opens `/enchants`. Config: `sword-menu: {enabled: true, command: blade}`.
 - Cleave: the Prison Blade also hits up to 2 nearby monsters for 50% damage. Config: `cleave: {enabled: true, radius: 3.0, extra-targets: 2, damage-share: 0.5}`.
 - `/mobzone tune <zone|all> <mobsPerSpawn> <maxMobs> <cooldown>` changes spawners through `/mm s set`.
