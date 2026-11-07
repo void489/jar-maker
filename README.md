@@ -80,3 +80,6 @@ After pasting a new map and fixing each zone's pos1/pos2 (`/mobzone create` or t
 - `/mobzone tune <zone|all> <mobsPerSpawn> <maxMobs> <cooldown>` changes spawners through `/mm s set`.
 
 - Join and quit messages are hidden (`hide-join-quit: true`, set false to show them again).
+
+## Rank/prestige notifications (2.5.0)
+Players get a chat message, action-bar line and sound once when they can afford the next rank (reads %prison_rankup_cost%, %prison_rankup_rank%, %vault_eco_balance%) or can prestige at rank Z. One reminder after `notify.reminder-minutes` (default 5, 0 = off). Off with `notify: {enabled: false}`.

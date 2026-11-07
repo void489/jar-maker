@@ -65,6 +65,7 @@ public final class MobZonePlugin extends JavaPlugin {
         boss.shutdown();
         nightVision.shutdown();
         killTracker.stop();
+        rankNotifier.stop();
         quests.shutdown();
         events.shutdown();
         tracked.clear();
@@ -72,6 +73,7 @@ public final class MobZonePlugin extends JavaPlugin {
 
     private final NightVision nightVision = new NightVision(this);
     private final KillTracker killTracker = new KillTracker(this);
+    private final RankNotifier rankNotifier = new RankNotifier(this);
     private final RankBonus rankBonus = new RankBonus(this);
     private final ChatFormat chatFormat = new ChatFormat(this);
     private final CrateManager crates = new CrateManager(this);
@@ -100,6 +102,7 @@ public final class MobZonePlugin extends JavaPlugin {
         boss.reload();
         nightVision.reload();
         killTracker.reload();
+        rankNotifier.reload();
         rankBonus.reload();
         chatFormat.reload();
         crates.reload();
