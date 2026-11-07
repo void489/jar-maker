@@ -18,7 +18,12 @@ final class Util {
 
     static void tell(CommandSender to, String legacy) { to.sendMessage(c(legacy)); }
 
-    static void broadcast(String legacy) { Bukkit.broadcast(c(legacy)); }
+    static void broadcast(String legacy) {
+        var msg = c(legacy);
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers())
+            if (p.getWorld().getName().equalsIgnoreCase("prison")) p.sendMessage(msg);
+        Bukkit.getConsoleSender().sendMessage(msg);
+    }
 
     static void console(String command) {
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);

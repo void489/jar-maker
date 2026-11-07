@@ -140,7 +140,7 @@ public final class BossManager implements Listener {
     }
 
     private void say(String legacy) {
-        Bukkit.broadcast(LEGACY.deserialize(legacy));
+        Util.broadcast(legacy);
     }
 
     /** Runs once a second. Cheap: a few comparisons, no entity scans. */
