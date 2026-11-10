@@ -3,6 +3,7 @@ version: '${version}'
 main: dev.mobzone.MobZonePlugin
 api-version: '26.1'
 depend: [MythicMobs]
+softdepend: [PlaceholderAPI]
 description: Keeps MythicMobs spawner mobs inside cuboid zones.
 commands:
   mobzone:

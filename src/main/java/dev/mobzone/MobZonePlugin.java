@@ -52,12 +52,18 @@ public final class MobZonePlugin extends JavaPlugin {
             var c = getCommand(n);
             if (c != null) c.setExecutor(pcmds);
         }
+        if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) registerPlaceholders();
         MobZoneCommand cmd = new MobZoneCommand(this);
         var pc = getCommand("mobzone");
         if (pc != null) {
             pc.setExecutor(cmd);
             pc.setTabCompleter(cmd);
         }
+    }
+
+    /** Own method so PlaceholderAPI classes only load when the plugin is present. */
+    private void registerPlaceholders() {
+        new KeysExpansion(this).register();
     }
 
     @Override

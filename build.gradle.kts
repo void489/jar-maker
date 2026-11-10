@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "dev.mobzone"
-version = "2.6.0"
+version = "2.6.1"
 
 // Overridable on the command line: -PpaperApi=... -PmythicVersion=...
 val paperApi = providers.gradleProperty("paperApi").getOrElse("26.1.2.build.+")
@@ -13,11 +13,13 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://mvn.lumine.io/repository/maven-public/")
+    maven("https://repo.helpch.at/releases/")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperApi")
     compileOnly("io.lumine:Mythic-Dist:$mythicVersion")
+    compileOnly("me.clip:placeholderapi:2.11.6")
 }
 
 tasks.withType<JavaCompile>().configureEach {
