@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "event", "update", "set", "restore", "tune");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -166,12 +166,15 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                             NamedTextColor.YELLOW);
                 }
             }
+            case "key" -> plugin.chests().keyCommand(sender, a);
             case "crate" -> {
-                if (a.length >= 4 && a[1].equalsIgnoreCase("open")) {
+                if (a.length >= 2 && (a[1].equalsIgnoreCase("link") || a[1].equalsIgnoreCase("unlink") || a[1].equalsIgnoreCase("chests"))) {
+                    plugin.chests().chestCommand(sender, a);
+                } else if (a.length >= 4 && a[1].equalsIgnoreCase("open")) {
                     Player t = org.bukkit.Bukkit.getPlayerExact(a[3]);
                     if (t == null) say(sender, "That player isn't online.", NamedTextColor.RED);
                     else plugin.crates().open(t, a[2]);
-                } else say(sender, "/mobzone crate open <crate> <player>  (crates: " + String.join(", ", plugin.crates().ids()) + ")", NamedTextColor.YELLOW);
+                } else say(sender, "/mobzone crate <open <crate> <player>|link <crate>|unlink|chests>  (crates: " + String.join(", ", plugin.crates().ids()) + ")", NamedTextColor.YELLOW);
             }
             case "event" -> {
                 String sub = a.length > 1 ? a[1].toLowerCase(Locale.ROOT) : "status";

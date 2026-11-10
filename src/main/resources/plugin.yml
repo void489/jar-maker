@@ -15,6 +15,9 @@ commands:
   events:
     description: Show the current server event
     usage: /events
+  keys:
+    description: Show your crate keys
+    usage: /keys
 permissions:
   mobzone.admin:
     description: Use /mobzone

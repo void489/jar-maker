@@ -13,10 +13,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /** Bio Token crates. Opened with: /mobzone crate open <crate> <player> (the /crates menu calls this). */
 public class CrateManager {
-    private record Reward(int weight, String type, long amount, double mult, int minutes,
+    record Reward(int weight, String type, long amount, double mult, int minutes,
                           String cmd, String text, boolean broadcast) {}
 
-    private record Crate(String id, String name, long cost, List<Reward> rewards, int[] weights) {}
+    record Crate(String id, String name, long cost, List<Reward> rewards, int[] weights) {}
 
     private record Booster(double mult, long until) {}
 
@@ -48,6 +48,8 @@ public class CrateManager {
         }
     }
 
+    Crate crate(String id) { return id == null ? null : crates.get(id.toLowerCase(Locale.ROOT)); }
+
     public java.util.Set<String> ids() { return crates.keySet(); }
 
     /** Personal cash booster multiplier for this player (1.0 when none is active). */
@@ -78,7 +80,7 @@ public class CrateManager {
             Util.broadcast("&#A3E635[Crate] &f" + p.getName() + " &7won &f" + text + " &7from " + c.name() + "&7!");
     }
 
-    private static String describe(Reward r) {
+    static String describe(Reward r) {
         return switch (r.type()) {
             case "cash" -> "&a$" + Util.money(r.amount());
             case "tokens" -> "&b" + r.amount() + " Bio Tokens";
@@ -87,7 +89,7 @@ public class CrateManager {
         };
     }
 
-    private void give(Player p, Reward r) {
+    void give(Player p, Reward r) {
         switch (r.type()) {
             case "cash" -> Util.console("eco give " + p.getName() + " " + r.amount());
             case "tokens" -> Util.console("points give " + p.getName() + " " + r.amount());

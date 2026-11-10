@@ -83,3 +83,6 @@ After pasting a new map and fixing each zone's pos1/pos2 (`/mobzone create` or t
 
 ## Rank/prestige notifications (2.5.0)
 Players get a chat message, action-bar line and sound once when they can afford the next rank (reads %prison_rankup_cost%, %prison_rankup_rank%, %vault_eco_balance%) or can prestige at rank Z. One reminder after `notify.reminder-minutes` (default 5, 0 = off). Off with `notify: {enabled: false}`.
+
+## Crate keys and chests (2.6.0)
+/mobzone key give|take|check, /mobzone crate link|unlink|chests, /keys. Right-click a linked chest = key + roulette animation, left-click = preview. Data: keys.yml, chests.yml. The old /mobzone crate open (Bio Token price) still works.

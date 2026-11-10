@@ -45,9 +45,10 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(rankBonus, this);
         getServer().getPluginManager().registerEvents(chatFormat, this);
         getServer().getPluginManager().registerEvents(quests, this);
+        getServer().getPluginManager().registerEvents(chests, this);
         getServer().getPluginManager().registerEvents(welcome, this);
         PlayerCommands pcmds = new PlayerCommands(this);
-        for (String n : new String[]{"quests", "events"}) {
+        for (String n : new String[]{"quests", "events", "keys"}) {
             var c = getCommand(n);
             if (c != null) c.setExecutor(pcmds);
         }
@@ -66,6 +67,7 @@ public final class MobZonePlugin extends JavaPlugin {
         nightVision.shutdown();
         killTracker.stop();
         rankNotifier.stop();
+        chests.shutdown();
         quests.shutdown();
         events.shutdown();
         tracked.clear();
@@ -74,6 +76,7 @@ public final class MobZonePlugin extends JavaPlugin {
     private final NightVision nightVision = new NightVision(this);
     private final KillTracker killTracker = new KillTracker(this);
     private final RankNotifier rankNotifier = new RankNotifier(this);
+    private final CrateChests chests = new CrateChests(this);
     private final RankBonus rankBonus = new RankBonus(this);
     private final ChatFormat chatFormat = new ChatFormat(this);
     private final CrateManager crates = new CrateManager(this);
@@ -82,6 +85,7 @@ public final class MobZonePlugin extends JavaPlugin {
     private final JoinWelcome welcome = new JoinWelcome(this);
 
     public CrateManager crates() { return crates; }
+    public CrateChests chests() { return chests; }
     public QuestManager quests() { return quests; }
     public EventManager events() { return events; }
 
@@ -106,6 +110,7 @@ public final class MobZonePlugin extends JavaPlugin {
         rankBonus.reload();
         chatFormat.reload();
         crates.reload();
+        chests.reload();
         quests.reload();
         events.reload();
     }
