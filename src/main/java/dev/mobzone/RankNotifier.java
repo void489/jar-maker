@@ -82,9 +82,9 @@ public final class RankNotifier {
             String rank = RankBonus.placeholder(p, "%prison_rank%");
             String next = RankBonus.placeholder(p, "%prison_rankup_rank%");
             double cost = num(RankBonus.placeholder(p, "%prison_rankup_cost%"));
-            if (rank == null || next == null || next.isBlank() || Double.isNaN(cost) || cost <= 0 || cash < cost) continue;
-            if (!rank.equals(st.rankKey)) {
-                st.rankKey = rank; st.rankAt = now; st.rankReminded = false;
+            if (next == null || next.isBlank() || Double.isNaN(cost) || cost <= 0 || cash < cost) continue;
+            if (!next.equals(st.rankKey)) {
+                st.rankKey = next; st.rankAt = now; st.rankReminded = false;
                 send(p, "&a&l[Rank] &7You can rank up to &f" + next + "&7! Type &f/rankup", "&aYou can rank up to " + next + "!");
             } else if (!st.rankReminded && remindMs > 0 && now - st.rankAt >= remindMs) {
                 st.rankReminded = true;

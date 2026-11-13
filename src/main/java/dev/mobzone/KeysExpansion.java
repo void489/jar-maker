@@ -3,7 +3,7 @@ package dev.mobzone;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 
-/** %mobzone_keys_<crate>% and %mobzone_keys_total% for holograms, scoreboards and menus. */
+/** %mobzone_rank% (rank letter, from Prison or the LuckPerms rank groups), %mobzone_keys_<crate>% and %mobzone_keys_total% for holograms, scoreboards and menus. */
 final class KeysExpansion extends PlaceholderExpansion {
     private final MobZonePlugin plugin;
 
@@ -16,7 +16,14 @@ final class KeysExpansion extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
-        if (player == null || !params.toLowerCase().startsWith("keys_")) return null;
+        if (player == null) return null;
+        if (params.equalsIgnoreCase("rank")) {
+            var online = player.getPlayer();
+            if (online == null) return "";
+            int r = RankBonus.rank(online, RankBonus.held(online));
+            return r < 1 ? "None" : String.valueOf((char) ('A' + r - 1));
+        }
+        if (!params.toLowerCase().startsWith("keys_")) return null;
         String crate = params.substring(5).toLowerCase();
         if (crate.equals("total")) {
             int sum = 0;
