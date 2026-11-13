@@ -160,6 +160,8 @@ public final class CrateChests implements Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             long amt = pendingOf(p.getUniqueId());
             if (!p.isOnline() || amt <= 0) return;
+            for (String w : plugin.getConfig().getStringList("claim.blocked-worlds"))
+                if (w.equalsIgnoreCase(p.getWorld().getName())) return;   // can't claim here, so don't nag
             long now = System.currentTimeMillis();
             if (now - lastReminder.getOrDefault(p.getUniqueId(), 0L) < 20_000L) return;
             lastReminder.put(p.getUniqueId(), now);
