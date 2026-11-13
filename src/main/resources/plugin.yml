@@ -19,6 +19,9 @@ commands:
   keys:
     description: Show your crate keys
     usage: /keys
+  claim:
+    description: Claim cash won from crates
+    usage: /claim
 permissions:
   mobzone.admin:
     description: Use /mobzone

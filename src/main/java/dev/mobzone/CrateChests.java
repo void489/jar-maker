@@ -57,6 +57,7 @@ public final class CrateChests implements Listener {
     private final Map<String, String> chests = new HashMap<>();          // "world;x;y;z" -> crate id
     private final Map<UUID, Map<String, Integer>> keys = new HashMap<>();
     private final Map<UUID, Gui> opening = new HashMap<>();
+    private final Map<UUID, Long> pending = new HashMap<>();             // unclaimed crate cash
     private File keyFile, chestFile;
 
     public CrateChests(MobZonePlugin plugin) { this.plugin = plugin; }
@@ -68,10 +69,15 @@ public final class CrateChests implements Listener {
         chestFile = new File(plugin.getDataFolder(), "chests.yml");
         chests.clear();
         keys.clear();
+        pending.clear();
         var cy = YamlConfiguration.loadConfiguration(chestFile);
         var cs = cy.getConfigurationSection("chests");
         if (cs != null) for (String k : cs.getKeys(false)) chests.put(k.replace('|', ';'), cs.getString(k, ""));
         var ky = YamlConfiguration.loadConfiguration(keyFile);
+        var ps = ky.getConfigurationSection("pending");
+        if (ps != null) for (String u : ps.getKeys(false)) {
+            try { pending.put(UUID.fromString(u), ps.getLong(u)); } catch (IllegalArgumentException ignored) { }
+        }
         var ks = ky.getConfigurationSection("keys");
         if (ks != null) for (String u : ks.getKeys(false)) {
             try {
@@ -93,6 +99,7 @@ public final class CrateChests implements Listener {
         var y = new YamlConfiguration();
         for (var e : keys.entrySet())
             for (var c : e.getValue().entrySet()) if (c.getValue() > 0) y.set("keys." + e.getKey() + "." + c.getKey(), c.getValue());
+        for (var e : pending.entrySet()) if (e.getValue() > 0) y.set("pending." + e.getKey(), e.getValue());
         try { y.save(keyFile); } catch (IOException ex) { plugin.getLogger().warning("Couldn't save keys.yml: " + ex.getMessage()); }
     }
 
@@ -119,6 +126,42 @@ public final class CrateChests implements Listener {
         keys.get(id).merge(crate, -1, Integer::sum);
         saveKeys();
         return true;
+    }
+
+    // ---------------------------------------------------------------- unclaimed crate cash
+
+    public long pendingOf(UUID id) { return pending.getOrDefault(id, 0L); }
+
+    public void addPending(UUID id, long amount) {
+        if (amount <= 0) return;
+        pending.merge(id, amount, Long::sum);
+        saveKeys();
+    }
+
+    /** /claim: pays everything waiting into the economy of the world the player is standing in. Only once. */
+    public void claim(Player p) {
+        List<String> blocked = plugin.getConfig().getStringList("claim.blocked-worlds");
+        for (String w : blocked) if (w.equalsIgnoreCase(p.getWorld().getName())) {
+            Util.tell(p, "&cYou can't claim here. Go to a game mode first, then run &f/claim&c.");
+            return;
+        }
+        long amount = pendingOf(p.getUniqueId());
+        if (amount <= 0) { Util.tell(p, "&7You have nothing to claim."); return; }
+        pending.remove(p.getUniqueId());
+        saveKeys();
+        Util.console("eco give " + p.getName() + " " + amount);
+        Util.tell(p, "&#A3E635[Claim] &7You claimed &a$" + Util.money(amount) + "&7 here.");
+        p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
+    }
+
+    @EventHandler
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            long amt = pendingOf(p.getUniqueId());
+            if (p.isOnline() && amt > 0)
+                Util.tell(p, "&#A3E635[Claim] &7You have &a$" + Util.money(amt) + " &7left to claim! Run &f/claim &7to claim it here.");
+        }, 60L);
     }
 
     public void showKeys(CommandSender to, Player who) {
@@ -408,6 +451,7 @@ public final class CrateChests implements Listener {
             Util.tell(p, "&#A3E635[Crate] &7You opened " + g.crate.name() + "&7 and won &f" + text + "&7!");
             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
             p.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, p.getLocation().add(0, 1.2, 0), 40, 0.5, 0.6, 0.5, 0.2);
+            if (r.type().equals("cash")) Util.tell(p, "&7Cash from crates is waiting. Run &f/claim &7in the mode you want it in (&a$" + Util.money(pendingOf(p.getUniqueId())) + "&7 waiting).");
             int left = keysOf(p.getUniqueId(), g.crate.id());
             if (left > 0) Util.tell(p, "&7You have &f" + left + " &7key" + (left > 1 ? "s" : "") + " left.");
             // show the winner for a moment, then close

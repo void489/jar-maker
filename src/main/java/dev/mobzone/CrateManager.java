@@ -75,7 +75,7 @@ public class CrateManager {
         Reward r = c.rewards().get(CrateMath.pick(c.weights(), ThreadLocalRandom.current().nextDouble()));
         String text = r.text().isEmpty() ? describe(r) : r.text();
         give(p, r);
-        Util.tell(p, "&#A3E635[Crate] &7You opened " + c.name() + "&7 and won &f" + text + "&7!");
+        Util.tell(p, "&#A3E635[Crate] &7You opened " + c.name() + "&7 and won &f" + text + "&7!" + (r.type().equals("cash") ? " &7Run &f/claim &7to collect the cash." : ""));
         if (r.broadcast())
             Util.broadcast("&#A3E635[Crate] &f" + p.getName() + " &7won &f" + text + " &7from " + c.name() + "&7!");
     }
@@ -91,7 +91,7 @@ public class CrateManager {
 
     void give(Player p, Reward r) {
         switch (r.type()) {
-            case "cash" -> Util.console("eco give " + p.getName() + " " + r.amount());
+            case "cash" -> plugin.chests().addPending(p.getUniqueId(), r.amount());
             case "tokens" -> Util.console("points give " + p.getName() + " " + r.amount());
             case "booster" -> boosters.put(p.getUniqueId(),
                     new Booster(r.mult(), System.currentTimeMillis() + r.minutes() * 60_000L));

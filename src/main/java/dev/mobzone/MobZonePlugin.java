@@ -48,7 +48,7 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(chests, this);
         getServer().getPluginManager().registerEvents(welcome, this);
         PlayerCommands pcmds = new PlayerCommands(this);
-        for (String n : new String[]{"quests", "events", "keys"}) {
+        for (String n : new String[]{"quests", "events", "keys", "claim"}) {
             var c = getCommand(n);
             if (c != null) c.setExecutor(pcmds);
         }

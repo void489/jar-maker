@@ -13,7 +13,10 @@ public class PlayerCommands implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("keys")) {
+        if (cmd.getName().equalsIgnoreCase("claim")) {
+            if (sender instanceof Player p) plugin.chests().claim(p);
+            else Util.tell(sender, "&cPlayers only.");
+        } else if (cmd.getName().equalsIgnoreCase("keys")) {
             if (sender instanceof Player p) plugin.chests().showKeys(p, p);
             else Util.tell(sender, "&cPlayers only.");
         } else if (cmd.getName().equalsIgnoreCase("quests")) {
