@@ -168,13 +168,13 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
             }
             case "key" -> plugin.chests().keyCommand(sender, a);
             case "crate" -> {
-                if (a.length >= 2 && (a[1].equalsIgnoreCase("link") || a[1].equalsIgnoreCase("unlink") || a[1].equalsIgnoreCase("chests"))) {
+                if (a.length >= 2 && (a[1].equalsIgnoreCase("link") || a[1].equalsIgnoreCase("unlink") || a[1].equalsIgnoreCase("chests") || a[1].equalsIgnoreCase("holograms"))) {
                     plugin.chests().chestCommand(sender, a);
                 } else if (a.length >= 4 && a[1].equalsIgnoreCase("open")) {
                     Player t = org.bukkit.Bukkit.getPlayerExact(a[3]);
                     if (t == null) say(sender, "That player isn't online.", NamedTextColor.RED);
                     else plugin.crates().open(t, a[2]);
-                } else say(sender, "/mobzone crate <open <crate> <player>|link <crate>|unlink|chests>  (crates: " + String.join(", ", plugin.crates().ids()) + ")", NamedTextColor.YELLOW);
+                } else say(sender, "/mobzone crate <open <crate> <player>|link <crate>|unlink|chests|holograms [remove]>  (crates: " + String.join(", ", plugin.crates().ids()) + ")", NamedTextColor.YELLOW);
             }
             case "event" -> {
                 String sub = a.length > 1 ? a[1].toLowerCase(Locale.ROOT) : "status";

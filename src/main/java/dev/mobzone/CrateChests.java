@@ -189,8 +189,52 @@ public final class CrateChests implements Listener {
         p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
     }
 
+    /** /mobzone crate holograms [remove]: makes a non-rotating key hologram above every linked chest. */
+    private void holograms(CommandSender s, boolean remove) {
+        if (!(s instanceof Player p)) { Util.tell(s, "&cRun this in game."); return; }
+        if (!Bukkit.getPluginManager().isPluginEnabled("DecentHolograms")) { Util.tell(s, "&cDecentHolograms isn't installed."); return; }
+        if (chests.isEmpty()) { Util.tell(s, "&eNo crate chests linked yet."); return; }
+        Location back = p.getLocation().clone();
+        List<Map.Entry<String, String>> list = new ArrayList<>(chests.entrySet());
+        Util.tell(s, "&7" + (remove ? "Removing" : "Creating") + " holograms for " + list.size() + " chests. Don't move for a few seconds...");
+        Map<String, Integer> count = new HashMap<>();
+        long t = 1;
+        for (var en : list) {
+            String[] k = en.getKey().split(";");
+            var w = Bukkit.getWorld(k[0]);
+            var crate = plugin.crates().crate(en.getValue());
+            if (w == null || crate == null) continue;
+            int n = count.merge(crate.id(), 1, Integer::sum);
+            String name = "keys_" + crate.id() + "_" + n;
+            Location at = new Location(w, Integer.parseInt(k[1]) + 0.5, Integer.parseInt(k[2]) + 1.6, Integer.parseInt(k[3]) + 0.5);
+            float yaw = 0f;
+            var bd = w.getBlockAt(Integer.parseInt(k[1]), Integer.parseInt(k[2]), Integer.parseInt(k[3])).getBlockData();
+            if (bd instanceof org.bukkit.block.data.Directional dir) {
+                yaw = switch (dir.getFacing()) { case WEST -> 90f; case NORTH -> 180f; case EAST -> -90f; default -> 0f; };
+            }
+            final float fyaw = yaw;
+            Bukkit.getScheduler().runTaskLater(plugin, () -> { p.teleport(at); }, t);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dh delete " + name);
+                if (remove) return;
+                Bukkit.dispatchCommand(p, "dh d create TEXT " + name + " " + crate.name());
+                Bukkit.dispatchCommand(p, "dh d addline " + name + " &7Your keys: &f%mobzone_keys_" + crate.id() + "%");
+                Bukkit.dispatchCommand(p, "dh d addline " + name + " &8Right-click to open");
+                Bukkit.dispatchCommand(p, "dh d addline " + name + " &8Left-click to preview");
+                Bukkit.dispatchCommand(p, "dh d attribute " + name + " billboard FIXED");
+                Bukkit.dispatchCommand(p, "dh d set-facing " + name + " " + fyaw);
+            }, t + 3);
+            t += 8;
+        }
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            p.teleport(back);
+            Util.tell(p, "&aDone. If a hologram looks wrong, run &f/dh d help &aand tell me what it says.");
+        }, t + 2);
+    }
+
     public void chestCommand(CommandSender s, String[] a) {
         String sub = a[1].toLowerCase(Locale.ROOT);
+        if (sub.equals("holograms")) { holograms(s, a.length > 2 && a[2].equalsIgnoreCase("remove")); return; }
         if (sub.equals("chests")) {
             if (chests.isEmpty()) { Util.tell(s, "&eNo crate chests linked yet."); return; }
             for (var e : chests.entrySet()) Util.tell(s, "&7" + e.getValue() + " &f@ " + e.getKey().replace(';', ' '));
