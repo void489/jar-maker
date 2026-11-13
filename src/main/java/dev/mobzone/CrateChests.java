@@ -154,15 +154,26 @@ public final class CrateChests implements Listener {
         p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
     }
 
-    @EventHandler
-    public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
-        Player p = e.getPlayer();
+    private final Map<UUID, Long> lastReminder = new HashMap<>();
+
+    private void remind(Player p, long delayTicks, String why) {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             long amt = pendingOf(p.getUniqueId());
-            if (p.isOnline() && amt > 0)
-                Util.tell(p, "&#A3E635[Claim] &7You have &a$" + Util.money(amt) + " &7left to claim! Run &f/claim &7to claim it here.");
-        }, 60L);
+            if (!p.isOnline() || amt <= 0) return;
+            long now = System.currentTimeMillis();
+            if (now - lastReminder.getOrDefault(p.getUniqueId(), 0L) < 20_000L) return;
+            lastReminder.put(p.getUniqueId(), now);
+            Util.tell(p, "&#A3E635[Claim] &7You have &a$" + Util.money(amt) + " &7left to claim! Run &f/claim &7to claim it here.");
+            p.sendActionBar(Util.c("&#A3E635$" + Util.money(amt) + " &7waiting: run &f/claim"));
+            plugin.getLogger().info("Claim reminder sent to " + p.getName() + " (" + why + ", $" + amt + ")");
+        }, delayTicks);
     }
+
+    @EventHandler
+    public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) { remind(e.getPlayer(), 100L, "join"); }
+
+    @EventHandler
+    public void onWorld(org.bukkit.event.player.PlayerChangedWorldEvent e) { remind(e.getPlayer(), 40L, "world change"); }
 
     public void showKeys(CommandSender to, Player who) {
         StringBuilder sb = new StringBuilder("&#A3E635&lKeys &7for &f" + who.getName() + "&7: ");
