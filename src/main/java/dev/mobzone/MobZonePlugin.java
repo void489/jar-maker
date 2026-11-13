@@ -46,6 +46,8 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(chatFormat, this);
         getServer().getPluginManager().registerEvents(quests, this);
         getServer().getPluginManager().registerEvents(chests, this);
+        getServer().getPluginManager().registerEvents(gameModes, this);
+        getServer().getPluginManager().registerEvents(new RespawnFix(this), this);
         getServer().getPluginManager().registerEvents(welcome, this);
         PlayerCommands pcmds = new PlayerCommands(this);
         for (String n : new String[]{"quests", "events", "keys", "claim"}) {
@@ -83,6 +85,7 @@ public final class MobZonePlugin extends JavaPlugin {
     private final KillTracker killTracker = new KillTracker(this);
     private final RankNotifier rankNotifier = new RankNotifier(this);
     private final CrateChests chests = new CrateChests(this);
+    private final GameModeKeeper gameModes = new GameModeKeeper(this);
     private final RankBonus rankBonus = new RankBonus(this);
     private final ChatFormat chatFormat = new ChatFormat(this);
     private final CrateManager crates = new CrateManager(this);
@@ -117,6 +120,7 @@ public final class MobZonePlugin extends JavaPlugin {
         chatFormat.reload();
         crates.reload();
         chests.reload();
+        gameModes.reload();
         quests.reload();
         events.reload();
     }
