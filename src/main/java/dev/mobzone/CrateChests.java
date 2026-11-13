@@ -157,7 +157,36 @@ public final class CrateChests implements Listener {
             Util.tell(s, "&aDone. " + t.getName() + " now has " + keysOf(t.getUniqueId(), crate) + " " + crate + " key(s).");
             return;
         }
-        Util.tell(s, "&e/mobzone key give <player> <crate> [amount]   /mobzone key take <player> <crate> [amount]   /mobzone key check <player>");
+        if (sub.equals("buy") && a.length >= 4) {
+            var t = Bukkit.getPlayerExact(a[2]);
+            if (t == null) { Util.tell(s, "&cThat player isn't online."); return; }
+            int n;
+            try { n = a.length > 4 ? Integer.parseInt(a[4]) : 1; } catch (NumberFormatException e) { Util.tell(s, "&cAmount must be a number."); return; }
+            buy(t, a[3], n);
+            return;
+        }
+        Util.tell(s, "&e/mobzone key give <player> <crate> [amount]   /mobzone key take <player> <crate> [amount]   /mobzone key buy <player> <crate> [amount]   /mobzone key check <player>");
+    }
+
+    /** Spends Bio Tokens (the crate's "cost" in config.yml) on keys. Used by the /crates key shop. */
+    public void buy(Player p, String crateId, int amount) {
+        var c = plugin.crates().crate(crateId);
+        if (c == null || amount < 1 || amount > 64) { Util.tell(p, "&cCouldn't buy that."); return; }
+        long total = c.cost() * amount;
+        String raw = RankBonus.placeholder(p, "%playerpoints_points%");
+        long bal;
+        try { bal = Long.parseLong(raw == null ? "" : raw.replace(",", "").trim()); }
+        catch (NumberFormatException e) { Util.tell(p, "&cCouldn't read your Bio Tokens. Tell an admin."); return; }
+        if (bal < total) {
+            Util.tell(p, "&cYou need &b" + total + " Bio Tokens &cfor that. You have &b" + bal + "&c.");
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+            return;
+        }
+        Util.console("points take " + p.getName() + " " + total);
+        addKeys(p.getUniqueId(), c.id(), amount);
+        Util.tell(p, "&#A3E635[Keys] &7Bought &f" + amount + "x &7" + c.name() + " &7key" + (amount > 1 ? "s" : "")
+                + " for &b" + total + " Bio Tokens&7. You have &f" + keysOf(p.getUniqueId(), c.id()) + "&7. Open them in the lobby (&f/warp crates&7).");
+        p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
     }
 
     public void chestCommand(CommandSender s, String[] a) {
