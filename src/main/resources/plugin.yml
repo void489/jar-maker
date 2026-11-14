@@ -22,7 +22,25 @@ commands:
   claim:
     description: Claim cash won from crates
     usage: /claim
+  promote:
+    description: Move a staff member up one role
+    usage: /promote <player>
+    permission: mobzone.promote
+  demote:
+    description: Move a staff member down one role
+    usage: /demote <player>
+    permission: mobzone.promote
+  keyall:
+    description: Give crate keys to everyone online
+    usage: /keyall <crate|all> [amount]
+    permission: mobzone.keyall
 permissions:
+  mobzone.promote:
+    description: Use /promote and /demote
+    default: op
+  mobzone.keyall:
+    description: Use /keyall
+    default: op
   mobzone.admin:
     description: Use /mobzone
     default: op

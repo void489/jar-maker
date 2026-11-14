@@ -18,6 +18,13 @@ final class Util {
 
     static void tell(CommandSender to, String legacy) { to.sendMessage(c(legacy)); }
 
+    /** Everyone online, every world (staff announcements like /keyall). */
+    static void broadcastAll(String legacy) {
+        var msg = c(legacy);
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) p.sendMessage(msg);
+        Bukkit.getConsoleSender().sendMessage(msg);
+    }
+
     static void broadcast(String legacy) {
         var msg = c(legacy);
         for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers())

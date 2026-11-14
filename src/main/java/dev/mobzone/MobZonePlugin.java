@@ -56,6 +56,11 @@ public final class MobZonePlugin extends JavaPlugin {
             var c = getCommand(n);
             if (c != null) c.setExecutor(pcmds);
         }
+        StaffCommands staff = new StaffCommands(this);
+        for (String n : new String[]{"promote", "demote", "keyall"}) {
+            var c = getCommand(n);
+            if (c != null) { c.setExecutor(staff); c.setTabCompleter(staff); }
+        }
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) registerPlaceholders();
         MobZoneCommand cmd = new MobZoneCommand(this);
         var pc = getCommand("mobzone");

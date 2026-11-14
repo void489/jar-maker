@@ -94,3 +94,6 @@ Gear/bonus reset is applied when each player next stands in the prison world (pl
 
 ## Perks only in prison (3.1.0)
 Dragon Heart and Speed are removed when a player leaves the prison world and re-applied from their saved levels when they return. Config perks.worlds (default [prison]).
+
+## Staff commands (3.2.0)
+/promote <player>, /demote <player> (helper>mod>admin>manager>coowner>owner, only below your own rank, owner never via /promote), /keyall <crate|all> [amount]. Permissions mobzone.promote, mobzone.keyall (default op).
