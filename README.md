@@ -86,3 +86,8 @@ Players get a chat message, action-bar line and sound once when they can afford 
 
 ## Crate keys and chests (2.6.0)
 /mobzone key give|take|check, /mobzone crate link|unlink|chests, /keys. Right-click a linked chest = key + roulette animation, left-click = preview. Data: keys.yml, chests.yml. The old /mobzone crate open (Bio Token price) still works.
+
+## Reset (3.0.0)
+/mobzone resetplayer <name> confirm  - wipes one player's progress (keeps staff/donor groups).
+/mobzone reset server confirm        - wipes everyone. Kicks online players. Runs in batches; config reset.commands-per-tick (default 8), reset.rank-command (default 'ranks set rank {player} A default', blank to skip).
+Gear/bonus reset is applied when each player next stands in the prison world (plugins/MobZone/resets.yml).

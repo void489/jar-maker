@@ -113,6 +113,10 @@ public final class CrateChests implements Listener {
 
     // ---------------------------------------------------------------- keys API
 
+    public void resetPlayer(UUID id) { keys.remove(id); pending.remove(id); saveKeys(); }
+
+    public void resetAll() { keys.clear(); pending.clear(); saveKeys(); }
+
     public int keysOf(UUID id, String crate) { return keys.getOrDefault(id, Map.of()).getOrDefault(crate, 0); }
 
     public void addKeys(UUID id, String crate, int n) {

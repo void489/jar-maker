@@ -86,6 +86,10 @@ public class QuestManager implements Listener {
         }
     }
 
+    public void resetPlayer(UUID id) { data.remove(id); save(); }
+
+    public void resetAll() { data.clear(); save(); }
+
     public void save() {
         if (file == null) return;
         var y = new YamlConfiguration();

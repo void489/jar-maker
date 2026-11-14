@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune", "resetplayer", "reset");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -227,6 +227,14 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                     }
                 }
                 say(sender, n == 0 ? "No such zone." : "Sent settings to " + n + " spawners. Check the console for any 'invalid' messages.", n == 0 ? NamedTextColor.RED : NamedTextColor.GREEN);
+            }
+            case "resetplayer" -> {
+                if (a.length < 2) { say(sender, "/mobzone resetplayer <player> [confirm]", NamedTextColor.YELLOW); return true; }
+                plugin.resets().resetPlayer(sender, a[1], a.length > 2 ? a[2] : null);
+            }
+            case "reset" -> {
+                if (a.length < 2 || !a[1].equalsIgnoreCase("server")) { say(sender, "/mobzone reset server [confirm]", NamedTextColor.YELLOW); return true; }
+                plugin.resets().resetServer(sender, a.length > 2 ? a[2] : null);
             }
             case "restore" -> {
                 if (a.length < 2) { say(sender, "/mobzone restore <player> [sword|armor|all]   (gives their gear back at their saved levels)", NamedTextColor.YELLOW); return true; }
