@@ -48,6 +48,7 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(chests, this);
         getServer().getPluginManager().registerEvents(gameModes, this);
         getServer().getPluginManager().registerEvents(resets, this);
+        getServer().getPluginManager().registerEvents(new PrisonOnly(this), this);
         getServer().getPluginManager().registerEvents(new PerkKeeper(this), this);
         getServer().getPluginManager().registerEvents(new RespawnFix(this), this);
         getServer().getPluginManager().registerEvents(welcome, this);

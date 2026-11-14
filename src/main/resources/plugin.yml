@@ -35,6 +35,9 @@ commands:
     usage: /keyall <crate|all> [amount]
     permission: mobzone.keyall
 permissions:
+  mobzone.bypass.worldcommands:
+    description: Use prison commands in any world
+    default: false
   mobzone.promote:
     description: Use /promote and /demote
     default: op

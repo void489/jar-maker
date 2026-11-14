@@ -97,3 +97,6 @@ Dragon Heart and Speed are removed when a player leaves the prison world and re-
 
 ## Staff commands (3.2.0)
 /promote <player>, /demote <player> (helper>mod>admin>manager>coowner>owner, only below your own rank, owner never via /promote), /keyall <crate|all> [amount]. Permissions mobzone.promote, mobzone.keyall (default op).
+
+## Prison-only commands (3.3.0)
+/rankup /ranks /prestige /enchants /armor /upgrades /blade /armorup /perks /quests /guide /sell etc. and /warp <zone> only work in the prison world. Config prison-only (enabled, worlds, commands, warps, message). Bypass: mobzone.bypass.worldcommands (OP alone does not bypass).
