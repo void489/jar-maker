@@ -60,7 +60,7 @@ public final class GameModeKeeper implements Listener {
 
     private GameMode defaultFor(String world) {
         String d = plugin.getConfig().getString("keep-gamemode.defaults." + world.toLowerCase(Locale.ROOT), null);
-        if (d == null) d = world.equalsIgnoreCase("lobby") ? "ADVENTURE" : world.equalsIgnoreCase("prison") ? "SURVIVAL" : null;
+        if (d == null) d = world.equalsIgnoreCase("lobby") ? "ADVENTURE" : (world.equalsIgnoreCase("prison") || world.toLowerCase(Locale.ROOT).startsWith("oneblock")) ? "SURVIVAL" : null;
         if (d == null) return null;
         try { return GameMode.valueOf(d.toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException e) { return null; }
     }
