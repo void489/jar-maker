@@ -48,6 +48,7 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(chests, this);
         getServer().getPluginManager().registerEvents(gameModes, this);
         getServer().getPluginManager().registerEvents(resets, this);
+        getServer().getPluginManager().registerEvents(wallets, this);
         getServer().getPluginManager().registerEvents(new PrisonOnly(this), this);
         getServer().getPluginManager().registerEvents(new JoinSpawn(this), this);
         getServer().getPluginManager().registerEvents(new PerkKeeper(this), this);
@@ -97,6 +98,7 @@ public final class MobZonePlugin extends JavaPlugin {
     private final CrateChests chests = new CrateChests(this);
     private final GameModeKeeper gameModes = new GameModeKeeper(this);
     private final ResetManager resets = new ResetManager(this);
+    private final WalletManager wallets = new WalletManager(this);
     private final RankBonus rankBonus = new RankBonus(this);
     private final ChatFormat chatFormat = new ChatFormat(this);
     private final CrateManager crates = new CrateManager(this);
@@ -107,6 +109,7 @@ public final class MobZonePlugin extends JavaPlugin {
     public CrateManager crates() { return crates; }
     public CrateChests chests() { return chests; }
     public ResetManager resets() { return resets; }
+    public WalletManager wallets() { return wallets; }
     public QuestManager quests() { return quests; }
     public EventManager events() { return events; }
 
@@ -134,6 +137,7 @@ public final class MobZonePlugin extends JavaPlugin {
         chests.reload();
         gameModes.reload();
         resets.reload();
+        wallets.reload();
         quests.reload();
         events.reload();
     }

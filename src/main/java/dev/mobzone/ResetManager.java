@@ -130,6 +130,7 @@ public final class ResetManager implements Listener {
     private void doPlayer(OfflinePlayer t, String n) {
         enqueue(commandsFor(n, t.getUniqueId()));
         plugin.chests().resetPlayer(t.getUniqueId());
+        plugin.wallets().resetPlayer(t.getUniqueId());
         plugin.quests().resetPlayer(t.getUniqueId());
         pendingGear.add(t.getUniqueId());
         save();
@@ -155,6 +156,7 @@ public final class ResetManager implements Listener {
         }
         all.add(0, "minecraft:scoreboard players reset * kills");
         plugin.chests().resetAll();
+        plugin.wallets().resetAll();
         plugin.quests().resetAll();
         save();
         for (Player p : new ArrayList<>(Bukkit.getOnlinePlayers()))

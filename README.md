@@ -103,3 +103,6 @@ Dragon Heart and Speed are removed when a player leaves the prison world and re-
 
 ## Join spawn (3.5.0)
 Players are sent to warp 'lobby' one second after joining (config join-spawn: enabled, warp, world). Turn OFF spawn-on-join in Essentials, it breaks Multiverse-Inventories.
+
+## Separate cash per mode (3.6.0)
+Essentials has one balance per player, so MobZone swaps it when a player moves between modes (prison / oneblock). Saved in plugins/MobZone/wallets.yml. Config wallets.enabled, wallets.worlds, wallets.start. Needs PlaceholderAPI's Vault expansion (vault_eco_balance_fixed).
