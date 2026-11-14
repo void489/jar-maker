@@ -81,17 +81,17 @@ public final class ResetManager implements Listener {
     }
 
     /** The console commands that wipe one player's progress (works for offline players too). */
-    private List<String> commandsFor(String n) {
+    private List<String> commandsFor(String n, UUID id) {
         List<String> c = new ArrayList<>();
         c.add("minecraft:scoreboard players reset " + n + " kills");
-        for (String z : ZONES) c.add("lp user " + n + " parent remove killgate_" + z);
-        for (int i = 1; i <= 10; i++) c.add("lp user " + n + " parent remove prestige_" + i);
-        for (char ch = 'b'; ch <= 'z'; ch++) c.add("lp user " + n + " parent remove rank_" + ch);
-        c.add("lp user " + n + " parent add rank_a");
-        c.add("lp user " + n + " meta unset prestige");
-        c.add("lp user " + n + " meta unset prestige_title");
-        for (String e : ENCH) c.add("lp user " + n + " meta unset ench_" + e);
-        for (String a : ARM) c.add("lp user " + n + " meta unset arm_" + a);
+        for (String z : ZONES) c.add("lp user " + id + " parent remove killgate_" + z);
+        for (int i = 1; i <= 10; i++) c.add("lp user " + id + " parent remove prestige_" + i);
+        for (char ch = 'b'; ch <= 'z'; ch++) c.add("lp user " + id + " parent remove rank_" + ch);
+        c.add("lp user " + id + " parent add rank_a");
+        c.add("lp user " + id + " meta unset prestige");
+        c.add("lp user " + id + " meta unset prestige_title");
+        for (String e : ENCH) c.add("lp user " + id + " meta unset ench_" + e);
+        for (String a : ARM) c.add("lp user " + id + " meta unset arm_" + a);
         c.add("points reset " + n);
         c.add("eco reset " + n);
         String rc = plugin.getConfig().getString("reset.rank-command", "ranks set rank {player} A default");
@@ -128,7 +128,7 @@ public final class ResetManager implements Listener {
     }
 
     private void doPlayer(OfflinePlayer t, String n) {
-        enqueue(commandsFor(n));
+        enqueue(commandsFor(n, t.getUniqueId()));
         plugin.chests().resetPlayer(t.getUniqueId());
         plugin.quests().resetPlayer(t.getUniqueId());
         pendingGear.add(t.getUniqueId());
@@ -150,7 +150,7 @@ public final class ResetManager implements Listener {
         List<OfflinePlayer> players = new ArrayList<>(List.of(Bukkit.getOfflinePlayers()));
         for (OfflinePlayer op : players) {
             if (op.getName() == null || !seen.add(op.getUniqueId())) continue;
-            all.addAll(commandsFor(op.getName()));
+            all.addAll(commandsFor(op.getName(), op.getUniqueId()));
             pendingGear.add(op.getUniqueId());
         }
         all.add(0, "minecraft:scoreboard players reset * kills");

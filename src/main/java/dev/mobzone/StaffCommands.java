@@ -65,16 +65,16 @@ public final class StaffCommands implements CommandExecutor, TabCompleter {
         if (cur > mine || (cur == mine && mine < owner)) { Util.tell(s, "&cYou can't change someone of your own rank or higher."); return true; }
         if (next > mine) { Util.tell(s, "&cYou can only give roles up to your own."); return true; }
         String n = t.getName();
-        if (cur >= 0) Util.console("lp user " + n + " parent remove " + ROLES.get(cur));
+        if (cur >= 0) Util.console("lp user " + t.getUniqueId() + " parent remove " + ROLES.get(cur));
         if (next >= 0) {
-            Util.console("lp user " + n + " parent add " + ROLES.get(next));
+            Util.console("lp user " + t.getUniqueId() + " parent add " + ROLES.get(next));
             if (cur < 0) {   // first time on staff: let them keep their game mode per world
-                Util.console("lp user " + n + " permission set mobzone.keepgamemode true");
-                Util.console("lp user " + n + " permission set mv.bypass.gamemode.* true");
+                Util.console("lp user " + t.getUniqueId() + " permission set mobzone.keepgamemode true");
+                Util.console("lp user " + t.getUniqueId() + " permission set mv.bypass.gamemode.* true");
             }
         } else {
-            Util.console("lp user " + n + " permission unset mobzone.keepgamemode");
-            Util.console("lp user " + n + " permission unset mv.bypass.gamemode.*");
+            Util.console("lp user " + t.getUniqueId() + " permission unset mobzone.keepgamemode");
+            Util.console("lp user " + t.getUniqueId() + " permission unset mv.bypass.gamemode.*");
         }
         Util.tell(s, "&a" + n + ": " + pretty(cur) + " -> " + pretty(next));
         Util.tell(t, up ? "&#A3E635[Staff] &7You were promoted to &f" + pretty(next) + "&7!" : "&#A3E635[Staff] &7You are now &f" + pretty(next) + "&7.");
