@@ -15,8 +15,8 @@ import java.util.Locale;
  * /promote <player>   one staff role up        (helper > mod > admin > manager > coowner > owner)
  * /demote <player>    one staff role down      (from helper they lose staff completely)
  * /keyall <crate|all> [amount]   keys for everyone online
- * You can only promote someone to a role BELOW your own, and only demote someone who is below you.
- * Console can do anything. Owner is never given by /promote (use LuckPerms for that on purpose).
+ * You can give roles up to your own rank and change people below you (owners can change anyone).
+ * /promote <player> <role> gives exactly that role (any role, even owner, if you are owner or console).
  */
 public final class StaffCommands implements CommandExecutor, TabCompleter {
     static final List<String> ROLES = List.of("helper", "mod", "admin", "manager", "coowner", "owner");
@@ -37,17 +37,26 @@ public final class StaffCommands implements CommandExecutor, TabCompleter {
     public boolean onCommand(CommandSender s, Command cmd, String label, String[] a) {
         String c = cmd.getName().toLowerCase(Locale.ROOT);
         if (c.equals("keyall")) { keyAll(s, a); return true; }
-        if (a.length < 1) { Util.tell(s, "&e/" + c + " <player>"); return true; }
+        if (a.length < 1) { Util.tell(s, c.equals("promote") ? "&e/promote <player> [role]   roles: " + String.join(", ", ROLES) : "&e/demote <player>"); return true; }
         Player t = Bukkit.getPlayerExact(a[0]);
         if (t == null) { Util.tell(s, "&cThat player must be online."); return true; }
         int cur = roleOf(t);
         int mine = s instanceof Player sp ? roleOf(sp) : ROLES.size();   // console is above everyone
         boolean up = c.equals("promote");
-        int next = up ? cur + 1 : cur - 1;
-        if (up && next >= ROLES.size() - 1) { Util.tell(s, "&cOwner can't be given with /promote. Use /lp user " + t.getName() + " parent add owner on purpose."); return true; }
-        if (!up && cur < 0) { Util.tell(s, "&c" + t.getName() + " isn't staff."); return true; }
-        if (cur >= mine) { Util.tell(s, "&cYou can't change someone of your own rank or higher."); return true; }
-        if (up && next >= mine) { Util.tell(s, "&cYou can only promote people to a role below yours."); return true; }
+        int owner = ROLES.size() - 1;
+        int next;
+        if (up && a.length > 1) {                       // /promote NAME <role>  = give exactly that role
+            next = ROLES.indexOf(a[1].toLowerCase(Locale.ROOT));
+            if (next < 0) { Util.tell(s, "&cUnknown role. Roles: " + String.join(", ", ROLES)); return true; }
+            if (next == cur) { Util.tell(s, "&e" + t.getName() + " already is " + pretty(cur) + "."); return true; }
+        } else {
+            next = up ? cur + 1 : cur - 1;
+            if (up && next > owner) { Util.tell(s, "&e" + t.getName() + " is already the highest role."); return true; }
+            if (!up && cur < 0) { Util.tell(s, "&c" + t.getName() + " isn't staff."); return true; }
+        }
+        // who can change whom: never someone above you; equal rank only for owners; roles up to your own
+        if (cur > mine || (cur == mine && mine < owner)) { Util.tell(s, "&cYou can't change someone of your own rank or higher."); return true; }
+        if (next > mine) { Util.tell(s, "&cYou can only give roles up to your own."); return true; }
         String n = t.getName();
         if (cur >= 0) Util.console("lp user " + n + " parent remove " + ROLES.get(cur));
         if (next >= 0) {
@@ -91,6 +100,8 @@ public final class StaffCommands implements CommandExecutor, TabCompleter {
         List<String> out = new ArrayList<>();
         if (cmd.getName().equalsIgnoreCase("keyall")) {
             if (a.length == 1) { out.addAll(plugin.crates().ids()); out.add("all"); }
+        } else if (cmd.getName().equalsIgnoreCase("promote") && a.length == 2) {
+            out.addAll(ROLES);
         } else if (a.length == 1) {
             for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
         }
