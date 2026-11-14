@@ -32,16 +32,33 @@ public class ChatFormat implements Listener {
                 "Reaper", "Warlord", "Overlord", "Immortal", "Apex");
     }
 
+    private static String tag(int role) {
+        return switch (role) {
+            case 5 -> "&4&l[Owner] &f";
+            case 4 -> "&c&l[Co-Owner] &f";
+            case 3 -> "&6&l[Manager] &f";
+            case 2 -> "&c[Admin] &f";
+            case 1 -> "&9[Mod] &f";
+            case 0 -> "&a[Helper] &f";
+            default -> "&7[Member] &7";
+        };
+    }
+
+    /** Chat is "[Staff role] Name: message". Rank, prestige and any other plugin's prefix are never shown (unless chat.show-prestige is true). */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChat(AsyncChatEvent e) {
         if (!enabled) return;
-        var perms = RankBonus.held(e.getPlayer());
-        int rank = Math.max(1, RankBonus.rank(e.getPlayer(), perms));
-        int pr = RankBonus.prestigeLevel(e.getPlayer(), perms);
-        String p = prefix.replace("{rank}", String.valueOf((char) ('A' + rank - 1)))
-                .replace("{prestige}", pr > 0 ? "[" + titles.get(Math.min(pr, titles.size()) - 1) + "] " : "");
-        Component pre = LEGACY.deserialize(p);
-        e.renderer(ChatRenderer.viewerUnaware((Player source, Component name, Component msg) ->
-                pre.append(name).append(Component.text(": ", NamedTextColor.DARK_GRAY)).append(msg.colorIfAbsent(NamedTextColor.WHITE))));
+        boolean showPrestige = plugin.getConfig().getBoolean("chat.show-prestige", false);
+        e.renderer(ChatRenderer.viewerUnaware((Player source, Component name, Component msg) -> {
+            String p = tag(StaffCommands.roleOf(source));
+            if (showPrestige) {
+                var perms = RankBonus.held(source);
+                int pr = RankBonus.prestigeLevel(source, perms);
+                if (pr > 0) p = "&#4ADE80[" + titles.get(Math.min(pr, titles.size()) - 1) + "] " + p;
+            }
+            return LEGACY.deserialize(p + source.getName())
+                    .append(Component.text(": ", NamedTextColor.DARK_GRAY))
+                    .append(msg.colorIfAbsent(NamedTextColor.WHITE));
+        }));
     }
 }
