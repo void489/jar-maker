@@ -100,3 +100,6 @@ Dragon Heart and Speed are removed when a player leaves the prison world and re-
 
 ## Prison-only commands (3.3.0)
 /rankup /ranks /prestige /enchants /armor /upgrades /blade /armorup /perks /quests /guide /sell etc. and /warp <zone> only work in the prison world. Config prison-only (enabled, worlds, commands, warps, message). Bypass: mobzone.bypass.worldcommands (OP alone does not bypass).
+
+## Join spawn (3.5.0)
+Players are sent to warp 'lobby' one second after joining (config join-spawn: enabled, warp, world). Turn OFF spawn-on-join in Essentials, it breaks Multiverse-Inventories.
