@@ -34,12 +34,12 @@ public class ChatFormat implements Listener {
 
     private static String tag(int role) {
         return switch (role) {
-            case 5 -> "&4&l[Owner] &f";
-            case 4 -> "&c&l[Co-Owner] &f";
-            case 3 -> "&6&l[Manager] &f";
-            case 2 -> "&c[Admin] &f";
-            case 1 -> "&9[Mod] &f";
-            case 0 -> "&a[Helper] &f";
+            case 5 -> "&4&l[Owner] &4";
+            case 4 -> "&c&l[Co-Owner] &c";
+            case 3 -> "&6&l[Manager] &6";
+            case 2 -> "&c[Admin] &c";
+            case 1 -> "&9[Mod] &9";
+            case 0 -> "&a[Helper] &a";
             default -> "&7[Member] &7";
         };
     }
