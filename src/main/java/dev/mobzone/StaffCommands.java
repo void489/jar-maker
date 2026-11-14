@@ -25,10 +25,17 @@ public final class StaffCommands implements CommandExecutor, TabCompleter {
 
     public StaffCommands(MobZonePlugin plugin) { this.plugin = plugin; }
 
-    /** Highest staff role index a player holds, -1 for none. Uses permissions, so the player must be online. */
+    /** Highest staff role a player is actually IN (their LuckPerms groups), -1 for none. Permissions are not used, because OP and wildcards would make everyone look like owner. */
     private static int roleOf(Player p) {
-        for (int i = ROLES.size() - 1; i >= 0; i--) if (p.hasPermission("group." + ROLES.get(i))) return i;
-        return -1;
+        String raw = RankBonus.placeholder(p, "%luckperms_groups%");
+        int best = -1;
+        if (raw != null) {
+            for (String g : raw.split("[,\\s]+")) {
+                int i = ROLES.indexOf(g.trim().toLowerCase(Locale.ROOT));
+                if (i > best) best = i;
+            }
+        }
+        return best;
     }
 
     private static String pretty(int i) { return i < 0 ? "no staff role" : ROLES.get(i); }
@@ -41,7 +48,7 @@ public final class StaffCommands implements CommandExecutor, TabCompleter {
         Player t = Bukkit.getPlayerExact(a[0]);
         if (t == null) { Util.tell(s, "&cThat player must be online."); return true; }
         int cur = roleOf(t);
-        int mine = s instanceof Player sp ? roleOf(sp) : ROLES.size();   // console is above everyone
+        int mine = !(s instanceof Player sp) ? ROLES.size() : sp.isOp() ? ROLES.size() - 1 : roleOf(sp);   // console above everyone, OP counts as owner
         boolean up = c.equals("promote");
         int owner = ROLES.size() - 1;
         int next;
