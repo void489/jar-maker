@@ -32,12 +32,13 @@ public final class HoverPlugin extends JavaPlugin {
         }
         Market market = mz.market();
         refresh(market);
-        Bukkit.getScheduler().runTaskTimer(this, () -> refresh(market), 20L, 40L);
+        Bukkit.getScheduler().runTaskTimer(this, () -> refresh(market), 10L, 10L);
         PacketEvents.getAPI().getEventManager().registerListener(new HoverListener(this));
         getLogger().info("Hover tooltips on.");
     }
 
     private void refresh(Market market) {
+        Map<UUID, String> old = modes;
         Map<UUID, String> m = new HashMap<>();
         Map<String, Map<Material, Double>> w = new HashMap<>();
         Map<String, Map<Material, Long>> o = new HashMap<>();
@@ -49,5 +50,10 @@ public final class HoverPlugin extends JavaPlugin {
             o.computeIfAbsent(mode, market::bestOrderSnapshot);
         }
         modes = m; worth = w; orders = o;
+        // tooltips only apply when the inventory is (re)sent, so resend it when a player's tooltip state changed
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            String before = old.get(p.getUniqueId()), after = m.get(p.getUniqueId());
+            if (!java.util.Objects.equals(before, after)) p.updateInventory();
+        }
     }
 }

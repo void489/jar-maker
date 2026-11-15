@@ -24,6 +24,7 @@ import java.util.Map;
 final class HoverListener extends PacketListenerAbstract {
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.builder().character('&').hexColors().build();
     private final HoverPlugin plugin;
+    private boolean warned;
 
     HoverListener(HoverPlugin plugin) {
         super(PacketListenerPriority.NORMAL);
@@ -54,7 +55,8 @@ final class HoverListener extends PacketListenerAbstract {
                 if (changed) { w.setItems(out); event.markForReEncode(true); }
             }
         } catch (RuntimeException ex) {
-            // never break packets because of a tooltip
+            // never break packets because of a tooltip; log the first problem so it can be fixed
+            if (!warned) { warned = true; plugin.getLogger().warning("Hover tooltip error (shown once): " + ex); ex.printStackTrace(); }
         }
     }
 
