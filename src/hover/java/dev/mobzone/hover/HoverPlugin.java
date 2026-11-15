@@ -1,0 +1,53 @@
+package dev.mobzone.hover;
+
+import com.github.retrooper.packetevents.PacketEvents;
+import dev.mobzone.Market;
+import dev.mobzone.MobZonePlugin;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Optional add-on for MobZone: adds a "Worth" line to item tooltips (client-side only, via PacketEvents).
+ * The real items are never changed. Players in the economy modes see it; creative players don't.
+ * Delete MobZoneHover.jar to turn it off.
+ */
+public final class HoverPlugin extends JavaPlugin {
+    // snapshots written on the main thread, read on network threads
+    volatile Map<UUID, String> modes = Map.of();
+    volatile Map<String, Map<Material, Double>> worth = Map.of();
+    volatile Map<String, Map<Material, Long>> orders = Map.of();
+
+    @Override
+    public void onEnable() {
+        if (!(Bukkit.getPluginManager().getPlugin("MobZone") instanceof MobZonePlugin mz)) {
+            getLogger().warning("MobZone not found, hover tooltips are off.");
+            return;
+        }
+        Market market = mz.market();
+        refresh(market);
+        Bukkit.getScheduler().runTaskTimer(this, () -> refresh(market), 20L, 40L);
+        PacketEvents.getAPI().getEventManager().registerListener(new HoverListener(this));
+        getLogger().info("Hover tooltips on.");
+    }
+
+    private void refresh(Market market) {
+        Map<UUID, String> m = new HashMap<>();
+        Map<String, Map<Material, Double>> w = new HashMap<>();
+        Map<String, Map<Material, Long>> o = new HashMap<>();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            String mode = market.modeFor(p);
+            if (mode == null || p.getGameMode() == GameMode.CREATIVE || p.getGameMode() == GameMode.SPECTATOR) continue;
+            m.put(p.getUniqueId(), mode);
+            w.computeIfAbsent(mode, market::worthSnapshot);
+            o.computeIfAbsent(mode, market::bestOrderSnapshot);
+        }
+        modes = m; worth = w; orders = o;
+    }
+}

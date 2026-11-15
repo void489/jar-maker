@@ -45,10 +45,8 @@ public final class Market {
     static final class Plan {
         final Map<Material, Integer> sold = new LinkedHashMap<>();   // total quantity actually sold per material
         final List<Alloc> allocs = new ArrayList<>();                // quantities going to orders
-        double worthValue, carry; boolean useCarry; String carryKey; long orderValue; int orderItems, worthItems;
-        long worthPay() { return (long) Math.floor(worthValue + carry + 1e-9); }
-        double newCarry() { return Math.max(0, worthValue + carry - worthPay()); }
-        long total() { return worthPay() + orderValue; }
+        double worthValue; long orderValue; int orderItems, worthItems;
+        long total() { return Math.round(worthValue) + orderValue; }
         int items() { return orderItems + worthItems; }
     }
 
@@ -59,7 +57,6 @@ public final class Market {
     private final Map<Long, Order> orders = new LinkedHashMap<>();
     private final Map<Long, Listing> listings = new LinkedHashMap<>();
     private final Map<String, Map<UUID, Long>> payouts = new HashMap<>();
-    private final Map<String, Double> carries = new HashMap<>();   // leftover cents from selling at fractional worth
     private long nextId = 1;
     private boolean dirty;
     private int taskId = -1;
@@ -76,7 +73,7 @@ public final class Market {
     }
 
     /** The mode this player is in, only if the economy commands are switched on for it. */
-    String modeFor(Player p) {
+    public String modeFor(Player p) {
         String m = modeOf(p.getWorld().getName());
         if (m == null) return null;
         List<String> on = plugin.getConfig().getStringList("economy.modes");
@@ -91,7 +88,7 @@ public final class Market {
 
     public void reload() {
         stop();
-        carries.clear(); worth.clear(); orders.clear(); listings.clear(); payouts.clear();
+        worth.clear(); orders.clear(); listings.clear(); payouts.clear();
         File wf = new File(plugin.getDataFolder(), "worth.yml");
         if (!wf.exists()) plugin.saveResource("worth.yml", false);
         var wy = YamlConfiguration.loadConfiguration(wf);
@@ -111,8 +108,6 @@ public final class Market {
 
         var oy = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "orders.yml"));
         nextId = Math.max(1, oy.getLong("next-id", 1));
-        var cs = oy.getConfigurationSection("carry");
-        if (cs != null) for (String k : cs.getKeys(false)) carries.put(k, cs.getDouble(k));
         var os = oy.getConfigurationSection("orders");
         if (os != null) for (String k : os.getKeys(false)) {
             var s = os.getConfigurationSection(k);
@@ -179,7 +174,6 @@ public final class Market {
         dirty = false;
         var oy = new YamlConfiguration();
         oy.set("next-id", nextId);
-        for (var c : carries.entrySet()) if (c.getValue() > 0) oy.set("carry." + c.getKey(), c.getValue());
         for (Order o : orders.values()) {
             String p = "orders." + o.id + ".";
             oy.set(p + "mode", o.mode); oy.set(p + "owner", o.owner.toString()); oy.set(p + "owner-name", o.ownerName);
@@ -215,6 +209,17 @@ public final class Market {
 
     // ---------------------------------------------------------------- worth
 
+    /** Copy of one mode's worth list (for the hover-tooltip add-on, which reads it off the main thread). */
+    public Map<Material, Double> worthSnapshot(String mode) { return new HashMap<>(worth.getOrDefault(mode, Map.of())); }
+
+    /** Best open order price per item for one mode (copy). */
+    public Map<Material, Long> bestOrderSnapshot(String mode) {
+        long now = System.currentTimeMillis();
+        Map<Material, Long> out = new HashMap<>();
+        for (Order o : orders.values()) if (o.mode.equals(mode) && o.active(now)) out.merge(o.item, o.price, Math::max);
+        return out;
+    }
+
     double worthOf(String mode, Material m) { return worth.getOrDefault(mode, Map.of()).getOrDefault(m, 0.0); }
 
     /** Best open order price for an item, or 0. Skips the given player's own orders. */
@@ -238,9 +243,6 @@ public final class Market {
     /** Works out where every item would go: the best order if it pays more than the worth, otherwise the worth. */
     Plan plan(String mode, UUID seller, Map<Material, Integer> counts) {
         Plan plan = new Plan();
-        plan.useCarry = true;
-        plan.carryKey = mode + "|" + seller;
-        plan.carry = carries.getOrDefault(plan.carryKey, 0.0);
         long now = System.currentTimeMillis();
         for (var e : counts.entrySet()) {
             Material mat = e.getKey();
@@ -279,7 +281,6 @@ public final class Market {
                     + " &7to your order" + (o.filled >= o.amount ? " &a(complete)" : " &7(" + o.filled + "/" + o.amount + ")") + "&7. Collect it in &f/orders &7> My Orders.");
         }
         long total = plan.total();
-        if (plan.useCarry) carries.put(plan.carryKey, plan.newCarry());
         if (total > 0) Util.console("eco give " + p.getName() + " " + total);
         dirty = true;
         return total;

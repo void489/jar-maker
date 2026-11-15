@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "dev.mobzone"
-version = "3.7.1"
+version = "3.7.2"
 
 // Overridable on the command line: -PpaperApi=... -PmythicVersion=...
 val paperApi = providers.gradleProperty("paperApi").getOrElse("26.1.2.build.+")
@@ -31,4 +31,41 @@ tasks.processResources {
     filesMatching("plugin.yml") {
         expand("version" to project.version)
     }
+}
+
+// ---- optional add-on: MobZone-Hover (tooltips via PacketEvents). Kept separate so a problem here can't break the main jar.
+sourceSets {
+    create("hover") {
+        compileClasspath += sourceSets["main"].output + sourceSets["main"].compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+repositories {
+    maven("https://repo.codemc.io/repository/maven-releases/")
+}
+
+dependencies {
+    "hoverCompileOnly"("com.github.retrooper:packetevents-spigot:2.12.0")
+}
+
+tasks.named<JavaCompile>("compileHoverJava") {
+    options.encoding = "UTF-8"
+    options.release.set(25)
+    options.isFailOnError = false
+}
+
+tasks.named<ProcessResources>("processHoverResources") {
+    filesMatching("plugin.yml") {
+        expand("version" to project.version)
+    }
+}
+
+val hoverJar = tasks.register<Jar>("hoverJar") {
+    archiveBaseName.set("MobZone-Hover")
+    from(sourceSets["hover"].output)
+}
+
+tasks.named("build") {
+    dependsOn(hoverJar)
 }

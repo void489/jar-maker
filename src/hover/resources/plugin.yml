@@ -1,0 +1,6 @@
+name: MobZoneHover
+version: '${version}'
+main: dev.mobzone.hover.HoverPlugin
+api-version: '26.1'
+depend: [MobZone, packetevents]
+description: Shows item worth in the hover tooltip (needs PacketEvents).

@@ -112,3 +112,7 @@ Essentials has one balance per player, so MobZone swaps it when a player moves b
 - `/orders`, `/order <item>`, `/order create <item> <amount> <price>`: order board, cash held, deliver menu, My Orders (collect / cancel + refund), 7-day expiry.
 - `/ah`, `/ah <item>`, `/ah sell <price>` (price is for the whole stack; matching orders are filled instantly), `/ah mine`.
 - `/worth [item]`, action-bar worth for the held item. Config: `economy:`; prices: `plugins/MobZone/worth.yml`.
+
+## 3.7.2
+- Worth is whole dollars (no cents/carry). Grass etc. = $1.
+- Optional add-on jar `MobZone-Hover-*.jar` (needs the PacketEvents plugin): adds "Worth: $X each" to item tooltips in your normal inventory. Remove the jar to turn it off. The main jar does not depend on it.
