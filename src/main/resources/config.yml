@@ -165,3 +165,16 @@ donor-bonus:
   donor_vip: 10
   donor_plus: 20
   donor_elite: 30
+
+# ---------------------------------------------------------------- economy (/sell /worth /orders /order /ah)
+# Per game mode. Prices live in worth.yml. Only works in the modes listed here (oneblock worlds start with "oneblock").
+economy:
+  modes: [oneblock]
+  order-days: 7
+  max-orders: 10
+  max-order-amount: 2304
+  max-price: 1000000
+  ah-days: 3
+  ah-max-listings: 10
+  ah-tax: 0
+  held-actionbar: true

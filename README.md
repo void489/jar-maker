@@ -106,3 +106,9 @@ Players are sent to warp 'lobby' one second after joining (config join-spawn: en
 
 ## Separate cash per mode (3.6.0)
 Essentials has one balance per player, so MobZone swaps it when a player moves between modes (prison / oneblock). Saved in plugins/MobZone/wallets.yml. Config wallets.enabled, wallets.worlds, wallets.start. Needs PlaceholderAPI's Vault expansion (vault_eco_balance_fixed).
+
+## 3.7.0 - per-mode economy (Oneblock)
+- `/sell` opens a menu (bottom row locked, green pane = total + confirm). Items go to the best open order if it pays more than the worth in `worth.yml`, otherwise to the worth.
+- `/orders`, `/order <item>`, `/order create <item> <amount> <price>`: order board, cash held, deliver menu, My Orders (collect / cancel + refund), 7-day expiry.
+- `/ah`, `/ah <item>`, `/ah sell <price>` (price is for the whole stack; matching orders are filled instantly), `/ah mine`.
+- `/worth [item]`, action-bar worth for the held item. Config: `economy:`; prices: `plugins/MobZone/worth.yml`.

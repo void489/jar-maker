@@ -49,6 +49,7 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(gameModes, this);
         getServer().getPluginManager().registerEvents(resets, this);
         getServer().getPluginManager().registerEvents(wallets, this);
+        getServer().getPluginManager().registerEvents(marketGui, this);   // before PrisonOnly so /sell in oneblock is ours
         getServer().getPluginManager().registerEvents(new PrisonOnly(this), this);
         getServer().getPluginManager().registerEvents(new JoinSpawn(this), this);
         getServer().getPluginManager().registerEvents(new PerkKeeper(this), this);
@@ -86,6 +87,8 @@ public final class MobZonePlugin extends JavaPlugin {
         killTracker.stop();
         rankNotifier.stop();
         chests.shutdown();
+        marketGui.shutdown();
+        market.shutdown();
         resets.shutdown();
         quests.shutdown();
         events.shutdown();
@@ -99,6 +102,8 @@ public final class MobZonePlugin extends JavaPlugin {
     private final GameModeKeeper gameModes = new GameModeKeeper(this);
     private final ResetManager resets = new ResetManager(this);
     private final WalletManager wallets = new WalletManager(this);
+    private final Market market = new Market(this);
+    private final MarketGui marketGui = new MarketGui(this, market);
     private final RankBonus rankBonus = new RankBonus(this);
     private final ChatFormat chatFormat = new ChatFormat(this);
     private final CrateManager crates = new CrateManager(this);
@@ -110,6 +115,7 @@ public final class MobZonePlugin extends JavaPlugin {
     public CrateChests chests() { return chests; }
     public ResetManager resets() { return resets; }
     public WalletManager wallets() { return wallets; }
+    public Market market() { return market; }
     public QuestManager quests() { return quests; }
     public EventManager events() { return events; }
 
@@ -138,6 +144,7 @@ public final class MobZonePlugin extends JavaPlugin {
         gameModes.reload();
         resets.reload();
         wallets.reload();
+        market.reload();
         quests.reload();
         events.reload();
     }

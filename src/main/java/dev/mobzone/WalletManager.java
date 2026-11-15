@@ -81,7 +81,7 @@ public final class WalletManager implements Listener {
         return null;
     }
 
-    private static long readBalance(Player p) {
+    static long readBalance(Player p) {
         for (String ph : new String[]{"%vault_eco_balance_fixed%", "%vault_eco_balance%"}) {
             String raw = RankBonus.placeholder(p, ph);
             double v = RankNotifier.num(raw);
