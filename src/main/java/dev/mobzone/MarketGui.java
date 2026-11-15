@@ -252,7 +252,8 @@ public final class MarketGui implements Listener {
         l.add("&7Total value: &a$" + Util.money(plan.total()));
         l.add("&7Items sold: &f" + plan.items());
         if (plan.orderItems > 0) l.add("&7To orders (pay more than worth): &f" + plan.orderItems + " &7for &a$" + Util.money(plan.orderValue));
-        if (plan.worthItems > 0) l.add("&7At worth: &f" + plan.worthItems + " &7for &a$" + Util.money(Math.round(plan.worthValue)));
+        if (plan.worthItems > 0) l.add("&7At worth: &f" + plan.worthItems + " &7for &a$" + Market.fmt(plan.worthValue));
+        if (plan.worthItems > 0 && plan.newCarry() > 0) l.add("&8$" + Market.fmt(plan.newCarry()) + " saved for your next sale (cash is whole dollars)");
         if (all > plan.items()) l.add("&cNot sellable: " + (all - plan.items()) + " (returned to you)");
         l.add(plan.items() > 0 ? "&eClick to confirm and sell" : "&7Put items in the menu above");
         d.inv.setItem(LAST, icon(Material.LIME_STAINED_GLASS_PANE, "&a&lConfirm sale", l.toArray(new String[0])));
