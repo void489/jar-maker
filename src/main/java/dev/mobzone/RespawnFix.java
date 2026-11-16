@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
 import java.io.File;
@@ -15,6 +16,8 @@ import java.util.Locale;
  * Dying in a game mode respawns you at that mode's own warp instead of the lobby spawn.
  * Config (in-code default: prison -> starter):   respawn: { prison: starter }
  * Reads the Essentials warp file, so it uses the exact spot you set with /setwarp.
+ * Also: hides death messages (hide-death-messages, default true) and sends oneblock players back to their island
+ * after dying (oneblock-respawn-command, default "ob go"; set it to '' to turn that off).
  */
 public final class RespawnFix implements Listener {
     private final MobZonePlugin plugin;
@@ -43,8 +46,20 @@ public final class RespawnFix implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
+    public void onDeath(PlayerDeathEvent e) {
+        if (plugin.getConfig().getBoolean("hide-death-messages", true)) e.deathMessage(null);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onRespawn(PlayerRespawnEvent e) {
         var p = e.getPlayer();
+        if (p.getWorld().getName().toLowerCase(Locale.ROOT).startsWith("oneblock")) {
+            String cmd = plugin.getConfig().getString("oneblock-respawn-command", "ob go");
+            if (cmd != null && !cmd.isBlank()) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> { if (p.isOnline()) p.performCommand(cmd); }, 5L);
+                return;
+            }
+        }
         String warp = warpFor(p.getWorld().getName());
         if (warp == null || warp.isBlank()) return;
         Location loc = warpLocation(warp);

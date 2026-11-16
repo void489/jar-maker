@@ -178,3 +178,8 @@ economy:
   ah-max-listings: 10
   ah-tax: 0
   held-actionbar: true
+
+# ---------------------------------------------------------------- deaths
+hide-death-messages: true
+# After dying in a oneblock world the player is sent to their island with this command ('' = off)
+oneblock-respawn-command: "ob go"
