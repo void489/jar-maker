@@ -76,8 +76,7 @@ final class HoverListener extends PacketListenerAbstract {
         if (each <= 0) { dbg("skip: no worth for " + m); return it; }
         dbg("tagged " + m + " worth " + each);
         List<Component> lore = new ArrayList<>();
-        lore.add(line("&7Worth: &a$" + fmt(each) + " &7each" + (best > base ? " &8(order price)" : "")));
-        if (it.getAmount() > 1) lore.add(line("&7Stack: &a$" + fmt(each * it.getAmount())));
+        lore.add(line("&a$" + fmt(each * Math.max(1, it.getAmount()))));      // one item: its worth; a stack: the total
         ItemStack copy = it.copy();
         copy.setComponent(ComponentTypes.LORE, new ItemLore(lore));
         return copy;
