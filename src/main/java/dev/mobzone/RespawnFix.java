@@ -57,7 +57,8 @@ public final class RespawnFix implements Listener {
         String world = p.getWorld().getName().toLowerCase(Locale.ROOT);
         var sec = plugin.getConfig().getConfigurationSection("spawn-redirect");
         String warp = null;
-        if (sec != null) {
+        // a section that exists only in the jar's defaults comes back EMPTY, so treat empty like missing
+        if (sec != null && !sec.getKeys(false).isEmpty()) {
             for (String k : sec.getKeys(false)) if (world.startsWith(k.toLowerCase(Locale.ROOT))) { warp = sec.getString(k); break; }
         } else if (world.startsWith("oneblock")) warp = "oneblock";
         if (warp == null || warp.isBlank()) { plugin.getLogger().info("/spawn by " + p.getName() + " in world '" + p.getWorld().getName() + "': no spawn-redirect matches this world, leaving it to Essentials"); return; }
