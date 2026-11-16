@@ -23,6 +23,15 @@ public final class HoverPlugin extends JavaPlugin {
     volatile Map<UUID, String> modes = Map.of();
     volatile Map<String, Map<Material, Double>> worth = Map.of();
     volatile Map<String, Map<Material, Long>> orders = Map.of();
+    private HoverListener listener;
+
+    /** /hoverdebug: logs the next 25 tooltip decisions to the console. */
+    @Override
+    public boolean onCommand(org.bukkit.command.CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
+        if (listener != null) listener.debug(25);
+        sender.sendMessage("Hover debug: the next 25 decisions will be logged to the console. Open your inventory or switch items now.");
+        return true;
+    }
 
     @Override
     public void onEnable() {
@@ -33,7 +42,8 @@ public final class HoverPlugin extends JavaPlugin {
         Market market = mz.market();
         refresh(market);
         Bukkit.getScheduler().runTaskTimer(this, () -> refresh(market), 10L, 10L);
-        PacketEvents.getAPI().getEventManager().registerListener(new HoverListener(this));
+        listener = new HoverListener(this);
+        PacketEvents.getAPI().getEventManager().registerListener(listener);
         getLogger().info("Hover tooltips on.");
     }
 
