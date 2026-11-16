@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
 import java.io.File;
@@ -43,6 +44,25 @@ public final class RespawnFix implements Listener {
         if (w == null) return null;
         return new Location(w, y.getDouble("x"), y.getDouble("y"), y.getDouble("z"),
                 (float) y.getDouble("yaw"), (float) y.getDouble("pitch"));
+    }
+
+    /** /spawn inside a oneblock world goes to the oneblock warp instead of the lobby. Config: spawn-redirect.oneblock: oneblock (world prefix: warp) */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onSpawnCommand(PlayerCommandPreprocessEvent e) {
+        String raw = e.getMessage().trim().toLowerCase(Locale.ROOT);
+        if (raw.startsWith("/")) raw = raw.substring(1);
+        String cmd = raw.split("\\s+")[0];
+        if (!(cmd.equals("spawn") || cmd.equals("espawn") || cmd.equals("essentials:spawn") || cmd.equals("essentialsspawn:spawn"))) return;
+        var p = e.getPlayer();
+        String world = p.getWorld().getName().toLowerCase(Locale.ROOT);
+        var sec = plugin.getConfig().getConfigurationSection("spawn-redirect");
+        String warp = null;
+        if (sec != null) {
+            for (String k : sec.getKeys(false)) if (world.startsWith(k.toLowerCase(Locale.ROOT))) { warp = sec.getString(k); break; }
+        } else if (world.startsWith("oneblock")) warp = "oneblock";
+        if (warp == null || warp.isBlank()) return;
+        e.setCancelled(true);
+        Util.console("warp " + warp + " " + p.getName());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

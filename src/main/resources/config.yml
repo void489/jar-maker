@@ -183,3 +183,7 @@ economy:
 hide-death-messages: true
 # After dying in a oneblock world the player is sent to their island with this command ('' = off)
 oneblock-respawn-command: "ob go"
+
+# /spawn inside these worlds goes to the warp instead of the lobby (world name starts with: warp name)
+spawn-redirect:
+  oneblock: oneblock
