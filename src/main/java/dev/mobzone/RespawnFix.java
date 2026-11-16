@@ -60,8 +60,9 @@ public final class RespawnFix implements Listener {
         if (sec != null) {
             for (String k : sec.getKeys(false)) if (world.startsWith(k.toLowerCase(Locale.ROOT))) { warp = sec.getString(k); break; }
         } else if (world.startsWith("oneblock")) warp = "oneblock";
-        if (warp == null || warp.isBlank()) return;
+        if (warp == null || warp.isBlank()) { plugin.getLogger().info("/spawn by " + p.getName() + " in world '" + p.getWorld().getName() + "': no spawn-redirect matches this world, leaving it to Essentials"); return; }
         e.setCancelled(true);
+        plugin.getLogger().info("/spawn by " + p.getName() + " in world '" + p.getWorld().getName() + "' -> warp " + warp);
         Util.console("warp " + warp + " " + p.getName());
     }
 
