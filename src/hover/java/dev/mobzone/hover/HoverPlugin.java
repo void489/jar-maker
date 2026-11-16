@@ -52,7 +52,7 @@ public final class HoverPlugin extends JavaPlugin implements org.bukkit.event.Li
     // Re-send the whole inventory one tick after any change (through the packet listener, so the tooltips come back).
     private final java.util.Set<UUID> resend = new java.util.HashSet<>();
 
-    private void queue(org.bukkit.entity.HumanEntity h) {
+    private void queue(org.bukkit.entity.Entity h) {
         if (!(h instanceof Player p) || !modes.containsKey(p.getUniqueId())) return;
         if (!resend.add(p.getUniqueId())) return;
         Bukkit.getScheduler().runTask(this, () -> {
