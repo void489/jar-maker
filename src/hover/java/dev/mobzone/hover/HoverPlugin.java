@@ -18,7 +18,7 @@ import java.util.UUID;
  * The real items are never changed. Players in the economy modes see it; creative players don't.
  * Delete MobZoneHover.jar to turn it off.
  */
-public final class HoverPlugin extends JavaPlugin {
+public final class HoverPlugin extends JavaPlugin implements org.bukkit.event.Listener {
     // snapshots written on the main thread, read on network threads
     volatile Map<UUID, String> modes = Map.of();
     volatile Map<String, Map<Material, Double>> worth = Map.of();
@@ -42,10 +42,39 @@ public final class HoverPlugin extends JavaPlugin {
         Market market = mz.market();
         refresh(market);
         Bukkit.getScheduler().runTaskTimer(this, () -> refresh(market), 10L, 10L);
+        Bukkit.getPluginManager().registerEvents(this, this);
         listener = new HoverListener(this);
         PacketEvents.getAPI().getEventManager().registerListener(listener);
         getLogger().info("Hover tooltips on.");
     }
+
+    // The server only re-sends items it thinks changed, so after moving/picking up/dropping items the tooltip text would be lost.
+    // Re-send the whole inventory one tick after any change (through the packet listener, so the tooltips come back).
+    private final java.util.Set<UUID> resend = new java.util.HashSet<>();
+
+    private void queue(org.bukkit.entity.HumanEntity h) {
+        if (!(h instanceof Player p) || !modes.containsKey(p.getUniqueId())) return;
+        if (!resend.add(p.getUniqueId())) return;
+        Bukkit.getScheduler().runTask(this, () -> {
+            resend.remove(p.getUniqueId());
+            if (p.isOnline()) p.updateInventory();
+        });
+    }
+
+    @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.MONITOR)
+    public void onClick(org.bukkit.event.inventory.InventoryClickEvent e) { queue(e.getWhoClicked()); }
+
+    @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.MONITOR)
+    public void onDrag(org.bukkit.event.inventory.InventoryDragEvent e) { queue(e.getWhoClicked()); }
+
+    @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.MONITOR)
+    public void onClose(org.bukkit.event.inventory.InventoryCloseEvent e) { queue(e.getPlayer()); }
+
+    @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.MONITOR)
+    public void onPickup(org.bukkit.event.entity.EntityPickupItemEvent e) { queue(e.getEntity()); }
+
+    @org.bukkit.event.EventHandler(priority = org.bukkit.event.EventPriority.MONITOR)
+    public void onDrop(org.bukkit.event.player.PlayerDropItemEvent e) { queue(e.getPlayer()); }
 
     private void refresh(Market market) {
         Map<UUID, String> old = modes;
