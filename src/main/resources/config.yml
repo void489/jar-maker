@@ -177,7 +177,6 @@ economy:
   ah-days: 3
   ah-max-listings: 10
   ah-tax: 0
-  held-actionbar: true
 
 # ---------------------------------------------------------------- deaths
 hide-death-messages: true

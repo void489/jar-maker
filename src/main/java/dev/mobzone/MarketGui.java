@@ -16,7 +16,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
@@ -608,20 +607,6 @@ public final class MarketGui implements Listener {
             long v = market.payoutOf(mode, p.getUniqueId());
             if (v > 0) Util.tell(p, "&#A3E635[AH] &7You have &a$" + Util.money(v) + " &7waiting from sold items. Open &f/ah &7to collect.");
         }, delay);
-    }
-
-    @EventHandler
-    public void onHeld(PlayerItemHeldEvent e) {
-        if (!plugin.getConfig().getBoolean("economy.held-actionbar", true)) return;
-        Player p = e.getPlayer();
-        String mode = market.modeFor(p);
-        if (mode == null) return;
-        ItemStack it = p.getInventory().getItem(e.getNewSlot());
-        if (!Market.plain(it)) return;
-        double w = market.worthOf(mode, it.getType());
-        long best = market.bestOrder(mode, it.getType(), p.getUniqueId());
-        if (w <= 0 && best <= 0) return;
-        p.sendActionBar(Util.c("&7" + Market.nice(it.getType()) + " worth: &a$" + Market.fmt(Math.max(w, best)) + " &7each" + (best > w ? " &8(order)" : "")));
     }
 
     // ---------------------------------------------------------------- clicks
