@@ -116,3 +116,8 @@ Essentials has one balance per player, so MobZone swaps it when a player moves b
 ## 3.7.2
 - Worth is whole dollars (no cents/carry). Grass etc. = $1.
 - Optional add-on jar `MobZone-Hover-*.jar` (needs the PacketEvents plugin): adds "Worth: $X each" to item tooltips in your normal inventory. Remove the jar to turn it off. The main jar does not depend on it.
+
+## 3.8.0 - /shop (Oneblock)
+- `/shop`: category menu (Building blocks, Wood, Redstone, Food, Armor & Tools, Miscellaneous). Left-click buys 1, right 16, shift 64. Buy-only.
+- `plugins/MobZone/shop.yml` holds the prices. Any price below `economy.shop-min-markup` (default 3) x the item's `/sell` worth is raised automatically and logged, so buy-then-sell never makes money.
+- Hand-checked: nothing sold here crafts into something worth more than its shop price; netherite, mace, spawners, elytra, TNT are not sold.

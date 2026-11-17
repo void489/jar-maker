@@ -63,6 +63,8 @@ public final class MarketGui implements Listener {
     private static final class AhH extends H { String query; int page, sort; List<Market.Listing> shown = new ArrayList<>(); }
     private static final class MyAhH extends H { List<Market.Listing> shown = new ArrayList<>(); }
     private static final class BuyH extends H { long listingId; }
+    private static final class ShopMenuH extends H { List<Market.ShopCat> cats = new ArrayList<>(); }
+    private static final class ShopH extends H { Market.ShopCat cat; int page; List<Map.Entry<Material, Long>> items = new ArrayList<>(); }
 
     private static final class Prompt { int step; Material item; int amount; String mode; }
 
@@ -134,11 +136,11 @@ public final class MarketGui implements Listener {
         String[] parts = raw.split("\\s+");
         if (parts.length == 0) return;
         String cmd = parts[0].toLowerCase(Locale.ROOT);
-        if (!(cmd.equals("sell") || cmd.equals("worth") || cmd.equals("orders") || cmd.equals("order") || cmd.equals("ah") || cmd.equals("auctionhouse"))) return;
+        if (!(cmd.equals("sell") || cmd.equals("worth") || cmd.equals("shop") || cmd.equals("orders") || cmd.equals("order") || cmd.equals("ah") || cmd.equals("auctionhouse"))) return;
         Player p = e.getPlayer();
         String mode = market.modeFor(p);
         if (mode == null) {
-            if (cmd.equals("sell") || cmd.equals("worth")) return;      // leave Prison's /sell and Essentials' /worth alone
+            if (cmd.equals("sell") || cmd.equals("worth") || cmd.equals("shop")) return;      // leave Prison's /sell and other plugins' /worth, /shop alone
             e.setCancelled(true);
             Util.tell(p, "&cThat only works in Oneblock.");
             return;
@@ -148,6 +150,7 @@ public final class MarketGui implements Listener {
         System.arraycopy(parts, 1, a, 0, a.length);
         switch (cmd) {
             case "sell" -> openSell(p, mode);
+            case "shop" -> openShopMenu(p, mode);
             case "worth" -> worthCmd(p, mode, a);
             case "orders" -> openBoard(p, mode, null);
             case "order" -> orderCmd(p, mode, a);
@@ -306,6 +309,75 @@ public final class MarketGui implements Listener {
         d.done = true;
         p.closeInventory();
         Util.tell(p, "&#A3E635[Orders] &7Delivered &f" + qty + "x " + Market.nice(o.item) + " &7and got &a$" + Util.money(paid) + "&7.");
+    }
+
+    // ---------------------------------------------------------------- shop (buy-only)
+
+    private static final int[] CAT_SLOTS = {10, 11, 12, 13, 14, 15, 16};
+
+    private void openShopMenu(Player p, String mode) {
+        ShopMenuH h = new ShopMenuH(); h.mode = mode;
+        h.cats = market.shopOf(mode);
+        open(p, h, 27, "&8Shop");
+        for (int i = 0; i < h.cats.size() && i < CAT_SLOTS.length; i++) {
+            Market.ShopCat c = h.cats.get(i);
+            h.inv.setItem(CAT_SLOTS[i], icon(c.icon, c.name, "&7" + c.items.size() + " items", "&eClick to open"));
+        }
+        if (h.cats.isEmpty()) h.inv.setItem(13, icon(Material.BARRIER, "&cThe shop is empty", "&7Add items in shop.yml"));
+        p.openInventory(h.inv);
+    }
+
+    private void openShop(Player p, String mode, Market.ShopCat cat, int page) {
+        ShopH h = new ShopH(); h.mode = mode; h.cat = cat; h.page = page;
+        h.items = new ArrayList<>(cat.items.entrySet());
+        int pages = Math.max(1, (h.items.size() + ITEMS - 1) / ITEMS);
+        h.page = Math.max(0, Math.min(h.page, pages - 1));
+        open(p, h, 54, "&8Shop: " + cat.name.replaceAll("&[0-9a-fk-or]", "") + (pages > 1 ? " (" + (h.page + 1) + "/" + pages + ")" : ""));
+        for (int i = 0; i < ITEMS; i++) {
+            int idx = h.page * ITEMS + i;
+            if (idx >= h.items.size()) break;
+            var en = h.items.get(idx);
+            List<String> l = new ArrayList<>();
+            l.add("&7Price: &a$" + Util.money(en.getValue()));
+            l.add(en.getKey().getMaxStackSize() > 1
+                    ? "&eLeft-click: buy 1  &8|  &eRight: buy 16  &8|  &eShift: buy 64"
+                    : "&eClick to buy");
+            h.inv.setItem(i, withLore(new ItemStack(en.getKey()), l));
+        }
+        ItemStack pane = icon(Material.GRAY_STAINED_GLASS_PANE, " ");
+        for (int i = ITEMS; i <= LAST; i++) h.inv.setItem(i, pane);
+        if (h.page > 0) h.inv.setItem(45, icon(Material.ARROW, "&ePrevious page", "&7Page " + h.page + "/" + pages));
+        h.inv.setItem(48, icon(Material.BARRIER, "&cBack to categories"));
+        long bal = WalletManager.readBalance(p);
+        h.inv.setItem(49, icon(Material.GOLD_INGOT, "&6Your cash", bal == Long.MIN_VALUE ? "&7Unknown" : "&a$" + Util.money(bal), "&7Sell things with &f/sell"));
+        if (h.page < pages - 1) h.inv.setItem(LAST, icon(Material.ARROW, "&eNext page", "&7Page " + (h.page + 2) + "/" + pages));
+        p.openInventory(h.inv);
+    }
+
+    private void shopBuy(Player p, ShopH h, Material m, long price, ClickType click) {
+        if (!h.mode.equals(market.modeFor(p))) { p.closeInventory(); return; }
+        int max = m.getMaxStackSize();
+        int qty = max <= 1 ? 1 : switch (click) {
+            case RIGHT, SHIFT_RIGHT -> click == ClickType.RIGHT ? 16 : 64;
+            case SHIFT_LEFT -> 64;
+            default -> 1;
+        };
+        qty = Math.min(qty, max);
+        int cap = 0;
+        for (ItemStack s : p.getInventory().getStorageContents()) {
+            if (s == null || s.getType().isAir()) cap += max;
+            else if (s.getType() == m && Market.plain(s)) cap += Math.max(0, max - s.getAmount());
+        }
+        if (cap <= 0) { Util.tell(p, "&#A3E635[Shop] &cYour inventory is full."); return; }
+        qty = Math.min(qty, cap);
+        long total = price * qty;
+        long bal = WalletManager.readBalance(p);
+        if (bal == Long.MIN_VALUE) { Util.tell(p, "&#A3E635[Shop] &cCouldn't read your balance right now."); return; }
+        if (bal < total) { Util.tell(p, "&#A3E635[Shop] &cYou need $" + Util.money(total) + " (you have $" + Util.money(bal) + ")."); return; }
+        Util.console("eco take " + p.getName() + " " + total);
+        give(p, new ItemStack(m, qty));
+        Util.tell(p, "&#A3E635[Shop] &7Bought &f" + qty + "x " + Market.nice(m) + " &7for &a$" + Util.money(total) + "&7.");
+        h.inv.setItem(49, icon(Material.GOLD_INGOT, "&6Your cash", "&a$" + Util.money(bal - total), "&7Sell things with &f/sell"));
     }
 
     // ---------------------------------------------------------------- order board
@@ -625,6 +697,17 @@ public final class MarketGui implements Listener {
         else if (h instanceof MineH m) mineClick(p, m, slot, right);
         else if (h instanceof AhH a) ahClick(p, a, slot, right);
         else if (h instanceof MyAhH m) myAhClick(p, m, slot);
+        else if (h instanceof ShopMenuH sm) {
+            for (int i = 0; i < CAT_SLOTS.length && i < sm.cats.size(); i++) if (CAT_SLOTS[i] == slot) openShop(p, sm.mode, sm.cats.get(i), 0);
+        }
+        else if (h instanceof ShopH sh) {
+            if (slot < ITEMS) {
+                int idx = sh.page * ITEMS + slot;
+                if (idx < sh.items.size()) shopBuy(p, sh, sh.items.get(idx).getKey(), sh.items.get(idx).getValue(), e.getClick());
+            } else if (slot == 45 && sh.page > 0) openShop(p, sh.mode, sh.cat, sh.page - 1);
+            else if (slot == LAST) openShop(p, sh.mode, sh.cat, sh.page + 1);
+            else if (slot == 48) openShopMenu(p, sh.mode);
+        }
         else if (h instanceof BuyH b) {
             if (slot == 11) buy(p, b);
             else if (slot == 15) openAh(p, b.mode, null);

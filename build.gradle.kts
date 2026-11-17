@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "dev.mobzone"
-version = "3.7.12"
+version = "3.8.0"
 
 // Overridable on the command line: -PpaperApi=... -PmythicVersion=...
 val paperApi = providers.gradleProperty("paperApi").getOrElse("26.1.2.build.+")

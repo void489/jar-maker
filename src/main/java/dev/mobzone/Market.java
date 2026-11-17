@@ -40,6 +40,11 @@ public final class Market {
         boolean active(long now) { return !ended && now < expires; }
     }
 
+    static final class ShopCat {
+        String id, name; Material icon = Material.CHEST;
+        final Map<Material, Long> items = new LinkedHashMap<>();
+    }
+
     static final class Alloc { Order order; int qty; }
 
     static final class Plan {
@@ -54,6 +59,7 @@ public final class Market {
 
     private final MobZonePlugin plugin;
     private final Map<String, Map<Material, Double>> worth = new HashMap<>();
+    private final Map<String, List<ShopCat>> shopCats = new HashMap<>();
     private final Map<Long, Order> orders = new LinkedHashMap<>();
     private final Map<Long, Listing> listings = new LinkedHashMap<>();
     private final Map<String, Map<UUID, Long>> payouts = new HashMap<>();
@@ -88,7 +94,7 @@ public final class Market {
 
     public void reload() {
         stop();
-        worth.clear(); orders.clear(); listings.clear(); payouts.clear();
+        shopCats.clear(); worth.clear(); orders.clear(); listings.clear(); payouts.clear();
         File wf = new File(plugin.getDataFolder(), "worth.yml");
         if (!wf.exists()) plugin.saveResource("worth.yml", false);
         var wy = YamlConfiguration.loadConfiguration(wf);
@@ -105,6 +111,7 @@ public final class Market {
             worth.put(mode.toLowerCase(Locale.ROOT), m);
         }
         if (bad > 0) plugin.getLogger().warning("worth.yml: skipped " + bad + " unknown item name(s)");
+        loadShop();
 
         var oy = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "orders.yml"));
         nextId = Math.max(1, oy.getLong("next-id", 1));
@@ -157,6 +164,48 @@ public final class Market {
         }
         start();
     }
+
+    /** shop.yml: buy-only categories. Any price below shop-min-markup x the sell worth is raised, so buy-then-sell can never profit. */
+    private void loadShop() {
+        File sf = new File(plugin.getDataFolder(), "shop.yml");
+        if (!sf.exists()) plugin.saveResource("shop.yml", false);
+        var sy = YamlConfiguration.loadConfiguration(sf);
+        double markup = Math.max(1.0, plugin.getConfig().getDouble("economy.shop-min-markup", 3.0));
+        int raised = 0, bad = 0;
+        for (String mode : sy.getKeys(false)) {
+            var cats = sy.getConfigurationSection(mode + ".categories");
+            if (cats == null) continue;
+            String mk = mode.toLowerCase(Locale.ROOT);
+            List<ShopCat> list = new ArrayList<>();
+            for (String id : cats.getKeys(false)) {
+                var cs = cats.getConfigurationSection(id);
+                if (cs == null) continue;
+                ShopCat c = new ShopCat();
+                c.id = id; c.name = cs.getString("name", id);
+                Material icon = Material.matchMaterial(cs.getString("icon", "CHEST"));
+                if (icon != null) c.icon = icon;
+                var items = cs.getConfigurationSection("items");
+                if (items != null) for (String k : items.getKeys(false)) {
+                    Material m = Material.matchMaterial(k);
+                    if (m == null || m.isAir() || !m.isItem()) { bad++; continue; }
+                    long price = items.getLong(k);
+                    long min = (long) Math.ceil(worthOf(mk, m) * markup);
+                    if (price < min) {
+                        plugin.getLogger().warning("shop.yml: " + k + " cost $" + price + " but sells for $" + Market.fmt(worthOf(mk, m))
+                                + ", raised to $" + min + " so it can't be used for infinite money.");
+                        price = min; raised++;
+                    }
+                    if (price < 1) { bad++; continue; }
+                    c.items.put(m, price);
+                }
+                if (!c.items.isEmpty()) list.add(c);
+            }
+            shopCats.put(mk, list);
+        }
+        if (bad > 0) plugin.getLogger().warning("shop.yml: skipped " + bad + " unknown or invalid item(s)");
+    }
+
+    List<ShopCat> shopOf(String mode) { return shopCats.getOrDefault(mode, List.of()); }
 
     private void start() {
         taskId = Bukkit.getScheduler().runTaskTimer(plugin, () -> { expire(); if (dirty) save(); }, 200L, 200L).getTaskId();
