@@ -171,6 +171,9 @@ public final class Market {
         if (!sf.exists()) plugin.saveResource("shop.yml", false);
         var sy = YamlConfiguration.loadConfiguration(sf);
         double markup = Math.max(1.0, plugin.getConfig().getDouble("economy.shop-min-markup", 3.0));
+        double mult = Math.max(0.1, plugin.getConfig().getDouble("economy.shop-price-multiplier", 2.0));
+        // items with no hardcoded worth sell for this share of their shop price (never more than 1/markup, so no profit loop)
+        double ratio = Math.min(1.0 / markup, Math.max(0.0, plugin.getConfig().getDouble("economy.shop-sell-ratio", 0.25)));
         int raised = 0, bad = 0;
         for (String mode : sy.getKeys(false)) {
             var cats = sy.getConfigurationSection(mode + ".categories");
@@ -188,7 +191,7 @@ public final class Market {
                 if (items != null) for (String k : items.getKeys(false)) {
                     Material m = Material.matchMaterial(k);
                     if (m == null || m.isAir() || !m.isItem()) { bad++; continue; }
-                    long price = items.getLong(k);
+                    long price = Math.round(items.getLong(k) * mult);
                     long min = (long) Math.ceil(worthOf(mk, m) * markup);
                     if (price < min) {
                         plugin.getLogger().warning("shop.yml: " + k + " cost $" + price + " but sells for $" + Market.fmt(worthOf(mk, m))
@@ -197,6 +200,11 @@ public final class Market {
                     }
                     if (price < 1) { bad++; continue; }
                     c.items.put(m, price);
+                    if (worthOf(mk, m) <= 0 && ratio > 0) {
+                        long d = (long) Math.floor(price * ratio);
+                        if (d < 1 && price >= 3) d = 1;
+                        if (d >= 1 && d * markup <= price) worth.computeIfAbsent(mk, x -> new HashMap<>()).put(m, (double) d);
+                    }
                 }
                 if (!c.items.isEmpty()) list.add(c);
             }

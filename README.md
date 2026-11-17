@@ -121,3 +121,7 @@ Essentials has one balance per player, so MobZone swaps it when a player moves b
 - `/shop`: category menu (Building blocks, Wood, Redstone, Food, Armor & Tools, Miscellaneous). Left-click buys 1, right 16, shift 64. Buy-only.
 - `plugins/MobZone/shop.yml` holds the prices. Any price below `economy.shop-min-markup` (default 3) x the item's `/sell` worth is raised automatically and logged, so buy-then-sell never makes money.
 - Hand-checked: nothing sold here crafts into something worth more than its shop price; netherite, mace, spawners, elytra, TNT are not sold.
+
+## 3.8.1
+- Shop prices are multiplied by `economy.shop-price-multiplier` (default 2.0).
+- Every shop item now sells too: items with no worth in worth.yml sell for `economy.shop-sell-ratio` (default 25%) of their shop price (also shown in the hover tooltip).

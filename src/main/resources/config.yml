@@ -177,6 +177,8 @@ economy:
   ah-days: 3
   ah-max-listings: 10
   ah-tax: 0
+  shop-price-multiplier: 2.0   # every shop.yml price is multiplied by this (raise it if the shop feels too cheap)
+  shop-sell-ratio: 0.25        # items without a worth in worth.yml sell for this share of their shop price
   shop-min-markup: 3      # shop price must be at least this x the sell worth (stops infinite money)
 
 # ---------------------------------------------------------------- deaths
