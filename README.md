@@ -125,3 +125,8 @@ Essentials has one balance per player, so MobZone swaps it when a player moves b
 ## 3.8.1
 - Shop prices are multiplied by `economy.shop-price-multiplier` (default 2.0).
 - Every shop item now sells too: items with no worth in worth.yml sell for `economy.shop-sell-ratio` (default 25%) of their shop price (also shown in the hover tooltip).
+
+## 3.9.0 - prices from the website
+- `economy.prices-url` (e.g. `https://voidlabs.fun/prices.json`) and `economy.prices-key` in config.yml. MobZone downloads sell worth and shop prices every `prices-refresh-minutes` (default 5), and on `/mobzone prices`.
+- A failed or invalid download never changes the active prices; the last good copy is kept in `plugins/MobZone/prices-cache.json`.
+- Website prices are final (no multiplier), but the 3x markup rule and the 25% auto sell value still apply.

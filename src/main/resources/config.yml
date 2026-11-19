@@ -179,6 +179,10 @@ economy:
   ah-tax: 0
   shop-price-multiplier: 2.0   # every shop.yml price is multiplied by this (raise it if the shop feels too cheap)
   shop-sell-ratio: 0.25        # items without a worth in worth.yml sell for this share of their shop price
+  # Prices from the website (voidlabs.fun/admin/prices). Empty url = use worth.yml and shop.yml only.
+  prices-url: ""                 # e.g. "https://voidlabs.fun/prices.json"
+  prices-key: ""                 # must match PRICES_KEY on the website (if you set one)
+  prices-refresh-minutes: 5
   shop-min-markup: 3      # shop price must be at least this x the sell worth (stops infinite money)
 
 # ---------------------------------------------------------------- deaths

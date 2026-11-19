@@ -170,47 +170,83 @@ public final class Market {
         File sf = new File(plugin.getDataFolder(), "shop.yml");
         if (!sf.exists()) plugin.saveResource("shop.yml", false);
         var sy = YamlConfiguration.loadConfiguration(sf);
-        double markup = Math.max(1.0, plugin.getConfig().getDouble("economy.shop-min-markup", 3.0));
         double mult = Math.max(0.1, plugin.getConfig().getDouble("economy.shop-price-multiplier", 2.0));
-        // items with no hardcoded worth sell for this share of their shop price (never more than 1/markup, so no profit loop)
-        double ratio = Math.min(1.0 / markup, Math.max(0.0, plugin.getConfig().getDouble("economy.shop-sell-ratio", 0.25)));
-        int raised = 0, bad = 0;
         for (String mode : sy.getKeys(false)) {
             var cats = sy.getConfigurationSection(mode + ".categories");
             if (cats == null) continue;
             String mk = mode.toLowerCase(Locale.ROOT);
-            List<ShopCat> list = new ArrayList<>();
-            for (String id : cats.getKeys(false)) {
-                var cs = cats.getConfigurationSection(id);
-                if (cs == null) continue;
-                ShopCat c = new ShopCat();
-                c.id = id; c.name = cs.getString("name", id);
-                Material icon = Material.matchMaterial(cs.getString("icon", "CHEST"));
-                if (icon != null) c.icon = icon;
-                var items = cs.getConfigurationSection("items");
-                if (items != null) for (String k : items.getKeys(false)) {
-                    Material m = Material.matchMaterial(k);
-                    if (m == null || m.isAir() || !m.isItem()) { bad++; continue; }
-                    long price = Math.round(items.getLong(k) * mult);
-                    long min = (long) Math.ceil(worthOf(mk, m) * markup);
-                    if (price < min) {
-                        plugin.getLogger().warning("shop.yml: " + k + " cost $" + price + " but sells for $" + Market.fmt(worthOf(mk, m))
-                                + ", raised to $" + min + " so it can't be used for infinite money.");
-                        price = min; raised++;
-                    }
-                    if (price < 1) { bad++; continue; }
-                    c.items.put(m, price);
-                    if (worthOf(mk, m) <= 0 && ratio > 0) {
-                        long d = (long) Math.floor(price * ratio);
-                        if (d < 1 && price >= 3) d = 1;
-                        if (d >= 1 && d * markup <= price) worth.computeIfAbsent(mk, x -> new HashMap<>()).put(m, (double) d);
-                    }
-                }
-                if (!c.items.isEmpty()) list.add(c);
-            }
-            shopCats.put(mk, list);
+            shopCats.put(mk, parseCategories(mk, cats, mult, "shop.yml"));
         }
-        if (bad > 0) plugin.getLogger().warning("shop.yml: skipped " + bad + " unknown or invalid item(s)");
+    }
+
+    /** Builds shop categories. Prices below shop-min-markup x the sell worth are raised; items with no worth get a share of their price as worth. */
+    private List<ShopCat> parseCategories(String mk, org.bukkit.configuration.ConfigurationSection cats, double mult, String source) {
+        double markup = Math.max(1.0, plugin.getConfig().getDouble("economy.shop-min-markup", 3.0));
+        // items with no hardcoded worth sell for this share of their shop price (never more than 1/markup, so no profit loop)
+        double ratio = Math.min(1.0 / markup, Math.max(0.0, plugin.getConfig().getDouble("economy.shop-sell-ratio", 0.25)));
+        int bad = 0;
+        List<ShopCat> list = new ArrayList<>();
+        for (String id : cats.getKeys(false)) {
+            var cs = cats.getConfigurationSection(id);
+            if (cs == null) continue;
+            ShopCat c = new ShopCat();
+            c.id = id; c.name = cs.getString("name", id);
+            Material icon = Material.matchMaterial(cs.getString("icon", "CHEST"));
+            if (icon != null) c.icon = icon;
+            var items = cs.getConfigurationSection("items");
+            if (items != null) for (String k : items.getKeys(false)) {
+                Material m = Material.matchMaterial(k);
+                if (m == null || m.isAir() || !m.isItem()) { bad++; continue; }
+                long price = Math.round(items.getLong(k) * mult);
+                long min = (long) Math.ceil(worthOf(mk, m) * markup);
+                if (price < min) {
+                    plugin.getLogger().warning(source + ": " + k + " cost $" + price + " but sells for $" + Market.fmt(worthOf(mk, m))
+                            + ", raised to $" + min + " so it can't be used for infinite money.");
+                    price = min;
+                }
+                if (price < 1) { bad++; continue; }
+                c.items.put(m, price);
+                if (worthOf(mk, m) <= 0 && ratio > 0) {
+                    long d = (long) Math.floor(price * ratio);
+                    if (d < 1 && price >= 3) d = 1;
+                    if (d >= 1 && d * markup <= price) worth.computeIfAbsent(mk, x -> new HashMap<>()).put(m, (double) d);
+                }
+            }
+            if (!c.items.isEmpty()) list.add(c);
+        }
+        if (bad > 0) plugin.getLogger().warning(source + ": skipped " + bad + " unknown or invalid item(s) in " + mk);
+        return list;
+    }
+
+    /**
+     * Applies prices downloaded from the website (JSON read as YAML). The website's numbers are final, so the price
+     * multiplier is not applied, but the markup rule and the auto sell value still are. Returns an error message or null.
+     * Call on the main thread.
+     */
+    String applyRemote(org.bukkit.configuration.ConfigurationSection root) {
+        int applied = 0, bad = 0;
+        for (String mode : root.getKeys(false)) {
+            var ms = root.getConfigurationSection(mode);
+            if (ms == null) continue;                                   // skips "version" / "updated"
+            var ws = ms.getConfigurationSection("worth");
+            var cats = ms.getConfigurationSection("categories");
+            if (ws == null && cats == null) continue;
+            String mk = mode.toLowerCase(Locale.ROOT);
+            if (ws != null) {
+                Map<Material, Double> m = new HashMap<>();
+                for (String k : ws.getKeys(false)) {
+                    Material mat = Material.matchMaterial(k);
+                    if (mat == null || mat.isAir() || !mat.isItem()) { bad++; continue; }
+                    double v = ws.getDouble(k);
+                    if (v > 0) m.put(mat, v);
+                }
+                worth.put(mk, m);
+            }
+            if (cats != null) shopCats.put(mk, parseCategories(mk, cats, 1.0, "website"));
+            applied++;
+        }
+        if (bad > 0) plugin.getLogger().warning("website prices: skipped " + bad + " unknown item name(s)");
+        return applied == 0 ? "the prices file has no game mode in it" : null;
     }
 
     List<ShopCat> shopOf(String mode) { return shopCats.getOrDefault(mode, List.of()); }

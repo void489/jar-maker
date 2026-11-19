@@ -88,6 +88,7 @@ public final class MobZonePlugin extends JavaPlugin {
         rankNotifier.stop();
         chests.shutdown();
         marketGui.shutdown();
+        prices.stop();
         market.shutdown();
         resets.shutdown();
         quests.shutdown();
@@ -104,6 +105,7 @@ public final class MobZonePlugin extends JavaPlugin {
     private final WalletManager wallets = new WalletManager(this);
     private final Market market = new Market(this);
     private final MarketGui marketGui = new MarketGui(this, market);
+    private final PriceSync prices = new PriceSync(this, market);
     private final RankBonus rankBonus = new RankBonus(this);
     private final ChatFormat chatFormat = new ChatFormat(this);
     private final CrateManager crates = new CrateManager(this);
@@ -116,6 +118,7 @@ public final class MobZonePlugin extends JavaPlugin {
     public ResetManager resets() { return resets; }
     public WalletManager wallets() { return wallets; }
     public Market market() { return market; }
+    public PriceSync prices() { return prices; }
     public QuestManager quests() { return quests; }
     public EventManager events() { return events; }
 
@@ -145,6 +148,7 @@ public final class MobZonePlugin extends JavaPlugin {
         resets.reload();
         wallets.reload();
         market.reload();
+        prices.reload();
         quests.reload();
         events.reload();
     }

@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune", "resetplayer", "reset");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune", "resetplayer", "reset", "prices");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -254,6 +254,10 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                         : a[1].equalsIgnoreCase("spawner") && mu.setSpawner(a[2], p.getLocation());
                 say(sender, ok ? "Moved " + a[2] + " to your position." : "Could not find that " + a[1] + ".",
                         ok ? NamedTextColor.GREEN : NamedTextColor.RED);
+            }
+            case "prices" -> {
+                say(sender, "Prices: " + plugin.prices().status() + ". Checking the website...", NamedTextColor.YELLOW);
+                plugin.prices().fetchNow(msg -> say(sender, msg, msg.startsWith("Prices updated") ? NamedTextColor.GREEN : NamedTextColor.RED));
             }
             case "reload" -> {
                 plugin.reloadAll();
