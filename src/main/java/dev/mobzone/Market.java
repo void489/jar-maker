@@ -83,7 +83,7 @@ public final class Market {
         String m = modeOf(p.getWorld().getName());
         if (m == null) return null;
         List<String> on = plugin.getConfig().getStringList("economy.modes");
-        if (on.isEmpty()) on = List.of("oneblock");
+        if (on.isEmpty()) on = List.of("oneblock", "smp");
         for (String s : on) if (s.equalsIgnoreCase(m)) return m;
         return null;
     }

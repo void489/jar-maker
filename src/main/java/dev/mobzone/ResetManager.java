@@ -37,6 +37,7 @@ public final class ResetManager implements Listener {
     private final MobZonePlugin plugin;
     private final Set<UUID> pendingGear = new HashSet<>();
     private final Set<UUID> pendingOb = new HashSet<>();
+    private final Set<UUID> pendingSmp = new HashSet<>();
     private final ArrayDeque<String> queue = new ArrayDeque<>();
     private final Map<String, Long> confirms = new HashMap<>();
     private File file;
@@ -50,9 +51,13 @@ public final class ResetManager implements Listener {
         file = new File(plugin.getDataFolder(), "resets.yml");
         pendingGear.clear();
         pendingOb.clear();
+        pendingSmp.clear();
         var y = YamlConfiguration.loadConfiguration(file);
         for (String u : y.getStringList("pending")) {
             try { pendingGear.add(UUID.fromString(u)); } catch (IllegalArgumentException ignored) { }
+        }
+        for (String u : y.getStringList("pending-smp")) {
+            try { pendingSmp.add(UUID.fromString(u)); } catch (IllegalArgumentException ignored) { }
         }
         for (String u : y.getStringList("pending-oneblock")) {
             try { pendingOb.add(UUID.fromString(u)); } catch (IllegalArgumentException ignored) { }
@@ -67,6 +72,9 @@ public final class ResetManager implements Listener {
         List<String> ol = new ArrayList<>();
         for (UUID u : pendingOb) ol.add(u.toString());
         y.set("pending-oneblock", ol);
+        List<String> sl = new ArrayList<>();
+        for (UUID u : pendingSmp) sl.add(u.toString());
+        y.set("pending-smp", sl);
         try { y.save(file); } catch (IOException e) { plugin.getLogger().warning("Couldn't save resets.yml: " + e.getMessage()); }
     }
 
@@ -131,7 +139,7 @@ public final class ResetManager implements Listener {
         return switch (scope) {
             case "prison" -> "PRISON progress (kills, gates, rank, prestige, upgrades, tokens, cash, keys, quests, gear)";
             case "oneblock" -> "ONEBLOCK progress (island, island level, Oneblock cash, inventory)";
-            case "smp" -> "SMP progress";
+            case "smp" -> "SMP progress (SMP cash and inventory; the SMP world itself is not touched)";
             default -> "EVERYTHING: Prison, Oneblock and SMP progress";
         };
     }
@@ -143,7 +151,7 @@ public final class ResetManager implements Listener {
         return out;
     }
 
-    private String startCash(String mode) { return String.valueOf(plugin.getConfig().getLong("wallets.start." + mode, 0L)); }
+    private String startCash(String mode) { return String.valueOf(plugin.getConfig().getLong("wallets.start." + mode, mode.equals("smp") ? 100L : 0L)); }
 
     /** Console commands that wipe one player for the given scope. */
     private List<String> planFor(String n, UUID id, String scope) {
@@ -167,6 +175,7 @@ public final class ResetManager implements Listener {
             pendingGear.add(id);
         }
         if (has(scope, "oneblock")) { pendingOb.add(id); plugin.obRewards().resetPlayer(id); }
+        if (has(scope, "smp")) pendingSmp.add(id);
     }
 
     public void resetPlayer(CommandSender s, String name, String scopeWord, String confirmWord) {
@@ -241,10 +250,15 @@ public final class ResetManager implements Listener {
     }
 
     private void applyOb(Player p) {
-        if (!p.isOnline() || !pendingOb.contains(p.getUniqueId())) return;
-        if (!p.getWorld().getName().toLowerCase(Locale.ROOT).startsWith("oneblock")) return;
+        if (!p.isOnline()) return;
+        String w = p.getWorld().getName().toLowerCase(Locale.ROOT);
+        String label;
+        Set<UUID> set;
+        if (w.startsWith("oneblock") && pendingOb.contains(p.getUniqueId())) { set = pendingOb; label = "Oneblock"; }
+        else if (w.startsWith("smp") && pendingSmp.contains(p.getUniqueId())) { set = pendingSmp; label = "SMP"; }
+        else return;
         if (!queue.isEmpty()) { Bukkit.getScheduler().runTaskLater(plugin, () -> applyOb(p), 40L); return; }
-        pendingOb.remove(p.getUniqueId());
+        set.remove(p.getUniqueId());
         save();
         p.getInventory().clear();
         p.getInventory().setArmorContents(new org.bukkit.inventory.ItemStack[4]);
@@ -254,7 +268,7 @@ public final class ResetManager implements Listener {
         p.setExp(0f);
         p.setFoodLevel(20);
         p.setHealth(p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH) != null ? p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue() : 20.0);
-        Util.tell(p, "&#A3E635[Reset] &7Your Oneblock inventory was cleared.");
+        Util.tell(p, "&#A3E635[Reset] &7Your " + label + " inventory was cleared.");
     }
 
     @EventHandler

@@ -193,6 +193,7 @@ oneblock-respawn-command: "ob go"
 # /spawn inside these worlds goes to the warp instead of the lobby (world name starts with: warp name)
 spawn-redirect:
   oneblock: oneblock
+  smp: smp
 
 # /mobzone reset server [prison|oneblock|smp|all] runs these per player. {player} and {uuid} are filled in.
 reset:
@@ -222,3 +223,6 @@ tokenshop:
 guide-redirect:
   oneblock: guide_oneblock
   smp: guide_smp
+
+# SMP: players who die without a bed go back to this warp (set it with /setwarp smp).
+smp-respawn-warp: smp

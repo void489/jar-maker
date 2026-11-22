@@ -110,6 +110,9 @@ public class OneblockRewards implements Listener {
 
     private boolean inOneblock(Player p) { return "oneblock".equals(plugin.market().modeFor(p)); }
 
+    /** Daily quests work in every economy world (Oneblock and SMP). */
+    private boolean inEconomy(Player p) { return plugin.market().modeFor(p) != null; }
+
     private Prog prog(UUID id) { return data.computeIfAbsent(id, k -> new Prog()); }
 
     private void load() {
@@ -223,7 +226,7 @@ public class OneblockRewards implements Listener {
     }
 
     private void add(Player p, String type, int amount) {
-        if (!enabled || pool.isEmpty() || !inOneblock(p)) return;
+        if (!enabled || pool.isEmpty() || !inEconomy(p)) return;
         Daily d = ensure(p);
         for (int i = 0; i < d.ids.size(); i++) {
             if (d.done.get(i)) continue;

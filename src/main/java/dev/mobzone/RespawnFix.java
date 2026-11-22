@@ -61,6 +61,7 @@ public final class RespawnFix implements Listener {
         if (sec != null && !sec.getKeys(false).isEmpty()) {
             for (String k : sec.getKeys(false)) if (world.startsWith(k.toLowerCase(Locale.ROOT))) { warp = sec.getString(k); break; }
         } else if (world.startsWith("oneblock")) warp = "oneblock";
+        else if (world.startsWith("smp")) warp = "smp";
         if (warp == null || warp.isBlank()) { plugin.getLogger().info("/spawn by " + p.getName() + " in world '" + p.getWorld().getName() + "': no spawn-redirect matches this world, leaving it to Essentials"); return; }
         e.setCancelled(true);
         plugin.getLogger().info("/spawn by " + p.getName() + " in world '" + p.getWorld().getName() + "' -> warp " + warp);
@@ -98,6 +99,13 @@ public final class RespawnFix implements Listener {
             String cmd = plugin.getConfig().getString("oneblock-respawn-command", "ob go");
             if (cmd != null && !cmd.isBlank()) {
                 Bukkit.getScheduler().runTaskLater(plugin, () -> { if (p.isOnline()) p.performCommand(cmd); }, 5L);
+                return;
+            }
+        }
+        if (p.getWorld().getName().toLowerCase(Locale.ROOT).startsWith("smp") && !e.isBedSpawn() && !e.isAnchorSpawn()) {
+            String sw = plugin.getConfig().getString("smp-respawn-warp", "smp");
+            if (sw != null && !sw.isBlank()) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> { if (p.isOnline()) Util.console("warp " + sw + " " + p.getName()); }, 5L);
                 return;
             }
         }

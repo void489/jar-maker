@@ -74,7 +74,7 @@ public final class WalletManager implements Listener {
         if (m != null) m.remove(mode);
         String cmd = null;
         if (mode.equals(active.getOrDefault(id, "prison")))
-            cmd = "eco set " + name + " " + plugin.getConfig().getLong("wallets.start." + mode, 0L);
+            cmd = "eco set " + name + " " + plugin.getConfig().getLong("wallets.start." + mode, mode.equals("smp") ? 100L : 0L);
         save();
         return cmd;
     }
@@ -89,6 +89,7 @@ public final class WalletManager implements Listener {
         String w = world.toLowerCase(Locale.ROOT);
         if (w.equals("prison")) return "prison";
         if (w.startsWith("oneblock")) return "oneblock";
+        if (w.startsWith("smp")) return "smp";
         return null;
     }
 
@@ -112,7 +113,7 @@ public final class WalletManager implements Listener {
         if (cur == Long.MIN_VALUE) { plugin.getLogger().warning("Wallet swap skipped for " + p.getName() + ": couldn't read the balance (is PlaceholderAPI's Vault expansion installed?)"); return; }
         var m = saved.computeIfAbsent(id, k -> new HashMap<>());
         m.put(a, cur);
-        long next = m.getOrDefault(g, plugin.getConfig().getLong("wallets.start." + g, 0L));
+        long next = m.getOrDefault(g, plugin.getConfig().getLong("wallets.start." + g, g.equals("smp") ? 100L : 0L));
         active.put(id, g);
         save();
         Util.console("eco set " + p.getName() + " " + next);

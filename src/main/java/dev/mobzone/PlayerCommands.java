@@ -21,7 +21,7 @@ public class PlayerCommands implements CommandExecutor {
             else Util.tell(sender, "&cPlayers only.");
         } else if (cmd.getName().equalsIgnoreCase("quests")) {
             if (sender instanceof Player p) {
-                if ("oneblock".equals(plugin.market().modeFor(p))) plugin.obRewards().show(p);
+                if (plugin.market().modeFor(p) != null) plugin.obRewards().show(p);
                 else plugin.quests().show(p);
             }
             else Util.tell(sender, "&cPlayers only.");
