@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "dev.mobzone"
-version = "3.11.0"
+version = "3.11.1"
 
 // Overridable on the command line: -PpaperApi=... -PmythicVersion=...
 val paperApi = providers.gradleProperty("paperApi").getOrElse("26.1.2.build.+")
@@ -78,13 +78,7 @@ sourceSets {
     }
 }
 
-repositories {
-    maven("https://repo.md-5.net/content/groups/public/")
-}
-
-dependencies {
-    "skinsCompileOnly"("LibsDisguises:LibsDisguises:10.0.44") { isTransitive = false }
-}
+// LibsDisguises is called through reflection, so nothing extra is needed to compile this add-on.
 
 tasks.named<JavaCompile>("compileSkinsJava") {
     options.encoding = "UTF-8"

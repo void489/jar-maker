@@ -1,8 +1,6 @@
 package dev.mobzone.skins;
 
 import io.lumine.mythic.bukkit.events.MythicMobSpawnEvent;
-import me.libraryaddict.disguise.DisguiseAPI;
-import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -80,15 +78,24 @@ public final class SkinsPlugin extends JavaPlugin implements Listener {
         if (url == null) return;
         Entity ent = e.getEntity();
         Bukkit.getScheduler().runTask(this, () -> {
-            if (!ent.isValid() || DisguiseAPI.isDisguised(ent)) return;
+            if (!ent.isValid()) return;
             try {
-                PlayerDisguise d = new PlayerDisguise("Zombie");
-                d.setSkin(url);
-                DisguiseAPI.disguiseToAll(ent, d);
+                disguise(ent, url);
             } catch (Throwable t) {
                 getLogger().warning("Could not apply the " + name + " skin: " + t);
             }
         });
+    }
+
+    /** LibsDisguises is used through reflection so this add-on compiles without it. */
+    private void disguise(Entity ent, String url) throws Exception {
+        Class<?> api = Class.forName("me.libraryaddict.disguise.DisguiseAPI");
+        Class<?> pd = Class.forName("me.libraryaddict.disguise.disguisetypes.PlayerDisguise");
+        Class<?> base = Class.forName("me.libraryaddict.disguise.disguisetypes.Disguise");
+        if (Boolean.TRUE.equals(api.getMethod("isDisguised", Entity.class).invoke(null, ent))) return;
+        Object d = pd.getConstructor(String.class).newInstance("Zombie");
+        pd.getMethod("setSkin", String.class).invoke(d, url);
+        api.getMethod("disguiseToAll", Entity.class, base).invoke(null, ent, d);
     }
 
     @Override
