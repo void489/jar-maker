@@ -36,6 +36,7 @@ public final class ResetManager implements Listener {
 
     private final MobZonePlugin plugin;
     private final Set<UUID> pendingGear = new HashSet<>();
+    private final Set<UUID> pendingOb = new HashSet<>();
     private final ArrayDeque<String> queue = new ArrayDeque<>();
     private final Map<String, Long> confirms = new HashMap<>();
     private File file;
@@ -48,9 +49,13 @@ public final class ResetManager implements Listener {
     public void reload() {
         file = new File(plugin.getDataFolder(), "resets.yml");
         pendingGear.clear();
+        pendingOb.clear();
         var y = YamlConfiguration.loadConfiguration(file);
         for (String u : y.getStringList("pending")) {
             try { pendingGear.add(UUID.fromString(u)); } catch (IllegalArgumentException ignored) { }
+        }
+        for (String u : y.getStringList("pending-oneblock")) {
+            try { pendingOb.add(UUID.fromString(u)); } catch (IllegalArgumentException ignored) { }
         }
     }
 
@@ -59,6 +64,9 @@ public final class ResetManager implements Listener {
         List<String> l = new ArrayList<>();
         for (UUID u : pendingGear) l.add(u.toString());
         y.set("pending", l);
+        List<String> ol = new ArrayList<>();
+        for (UUID u : pendingOb) ol.add(u.toString());
+        y.set("pending-oneblock", ol);
         try { y.save(file); } catch (IOException e) { plugin.getLogger().warning("Couldn't save resets.yml: " + e.getMessage()); }
     }
 
@@ -122,7 +130,7 @@ public final class ResetManager implements Listener {
     private static String describe(String scope) {
         return switch (scope) {
             case "prison" -> "PRISON progress (kills, gates, rank, prestige, upgrades, tokens, cash, keys, quests, gear)";
-            case "oneblock" -> "ONEBLOCK progress (island, island level, Oneblock cash)";
+            case "oneblock" -> "ONEBLOCK progress (island, island level, Oneblock cash, inventory)";
             case "smp" -> "SMP progress";
             default -> "EVERYTHING: Prison, Oneblock and SMP progress";
         };
@@ -158,6 +166,7 @@ public final class ResetManager implements Listener {
             plugin.quests().resetPlayer(id);
             pendingGear.add(id);
         }
+        if (has(scope, "oneblock")) pendingOb.add(id);
     }
 
     public void resetPlayer(CommandSender s, String name, String scopeWord, String confirmWord) {
@@ -176,6 +185,7 @@ public final class ResetManager implements Listener {
         applyPluginState(t.getUniqueId(), scope);
         save();
         Player on = t.getPlayer();
+        if (on != null && has(scope, "oneblock")) Bukkit.getScheduler().runTaskLater(plugin, () -> applyOb(on), 60L);
         if (on != null && has(scope, "prison")) {
             Util.tell(on, "&#A3E635[Reset] &7Your progress was reset. Starting over from rank A!");
             Bukkit.getScheduler().runTaskLater(plugin, () -> applyGear(on), 60L);
@@ -229,13 +239,32 @@ public final class ResetManager implements Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () -> { if (p.isOnline()) GearRestore.run(p, "all"); }, 60L);
     }
 
+    private void applyOb(Player p) {
+        if (!p.isOnline() || !pendingOb.contains(p.getUniqueId())) return;
+        if (!p.getWorld().getName().toLowerCase(Locale.ROOT).startsWith("oneblock")) return;
+        if (!queue.isEmpty()) { Bukkit.getScheduler().runTaskLater(plugin, () -> applyOb(p), 40L); return; }
+        pendingOb.remove(p.getUniqueId());
+        save();
+        p.getInventory().clear();
+        p.getInventory().setArmorContents(new org.bukkit.inventory.ItemStack[4]);
+        p.getInventory().setItemInOffHand(null);
+        p.getEnderChest().clear();
+        p.setLevel(0);
+        p.setExp(0f);
+        p.setFoodLevel(20);
+        p.setHealth(p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH) != null ? p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue() : 20.0);
+        Util.tell(p, "&#A3E635[Reset] &7Your Oneblock inventory was cleared.");
+    }
+
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Bukkit.getScheduler().runTaskLater(plugin, () -> applyGear(e.getPlayer()), 100L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> applyOb(e.getPlayer()), 100L);
     }
 
     @EventHandler
     public void onWorld(PlayerChangedWorldEvent e) {
         Bukkit.getScheduler().runTaskLater(plugin, () -> applyGear(e.getPlayer()), 40L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> applyOb(e.getPlayer()), 40L);
     }
 }
