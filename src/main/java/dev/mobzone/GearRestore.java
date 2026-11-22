@@ -15,7 +15,7 @@ import java.util.Locale;
  */
 final class GearRestore {
     private static final String SWORD = "iron_sword[custom_name={text:\"Prison Blade\",color:\"red\",italic:false},"
-            + "lore=[{text:\"Type /enchants to upgrade\",color:\"gray\",italic:false}],unbreakable={}]";
+            + "lore=[{text:\"Type /enchants to upgrade\",color:\"gray\",italic:false}],unbreakable={},item_model=\"prison:prison_blade\"]";
     private static final String[][] PIECES = {
             {"head", "leather_helmet", "Prison Helmet"}, {"chest", "leather_chestplate", "Prison Chestplate"},
             {"legs", "leather_leggings", "Prison Leggings"}, {"feet", "leather_boots", "Prison Boots"}};
@@ -69,7 +69,7 @@ final class GearRestore {
             for (String[] pc : PIECES)
                 Util.console("minecraft:item replace entity " + n + " armor." + pc[0] + " with " + pc[1]
                         + "[custom_name={text:\"" + pc[2] + "\",color:\"green\",italic:false},lore=[{text:\"Type /armor to upgrade\",color:\"gray\",italic:false}],"
-                        + "unbreakable={},enchantments={binding_curse:1}]");
+                        + "unbreakable={},enchantments={binding_curse:1},item_model=\"prison:prison_" + pc[1].substring(8) + "\",equippable={slot:\"" + pc[0] + "\",asset_id:\"prison:prison\"}]");
             int prot = level(p, "arm_prot"), blast = level(p, "arm_blast"), thorns = level(p, "arm_thorns"),
                     hard = level(p, "arm_hardened"), fire = level(p, "arm_fire_shield");
             for (String[] pc : PIECES) {
