@@ -266,7 +266,7 @@ public final class CrateChests implements Listener {
             if (w == null || crate == null) continue;
             int n = count.merge(crate.id(), 1, Integer::sum);
             String name = "keys_" + crate.id() + "_" + n;
-            Location at = new Location(w, Integer.parseInt(k[1]) + 0.5, Integer.parseInt(k[2]) + 1.6, Integer.parseInt(k[3]) + 0.5);
+            Location at = new Location(w, Integer.parseInt(k[1]) + 0.5, Integer.parseInt(k[2]) + 2.1, Integer.parseInt(k[3]) + 0.5);
             float yaw = 0f;
             var bd = w.getBlockAt(Integer.parseInt(k[1]), Integer.parseInt(k[2]), Integer.parseInt(k[3])).getBlockData();
             if (bd instanceof org.bukkit.block.data.Directional dir) {
@@ -277,10 +277,17 @@ public final class CrateChests implements Listener {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dh delete " + name);
                 if (remove) return;
-                Bukkit.dispatchCommand(p, "dh d create TEXT " + name + " " + crate.name());
-                Bukkit.dispatchCommand(p, "dh d addline " + name + " &7Your keys: &f%mobzone_keys_" + crate.id() + "%");
-                Bukkit.dispatchCommand(p, "dh d addline " + name + " &8Right-click to open");
-                Bukkit.dispatchCommand(p, "dh d addline " + name + " &8Left-click to preview");
+                String icon = switch (crate.id()) {
+                    case "common" -> "GRAY_SHULKER_BOX"; case "uncommon" -> "LIME_SHULKER_BOX"; case "rare" -> "BLUE_SHULKER_BOX";
+                    case "epic" -> "PURPLE_SHULKER_BOX"; case "legendary" -> "ORANGE_SHULKER_BOX"; case "mythic" -> "RED_SHULKER_BOX";
+                    default -> "TRIPWIRE_HOOK";
+                };
+                Bukkit.dispatchCommand(p, "dh d create TEXT " + name + " #ICON: " + icon);
+                Bukkit.dispatchCommand(p, "dh d addline " + name + " " + crate.name());
+                Bukkit.dispatchCommand(p, "dh d addline " + name + " &8&m            ");
+                Bukkit.dispatchCommand(p, "dh d addline " + name + " &7ʏᴏᴜʀ ᴋᴇʏꜱ&8: &f%mobzone_keys_" + crate.id() + "%");
+                Bukkit.dispatchCommand(p, "dh d addline " + name + " &#4ADE80ʀɪɢʜᴛ-ᴄʟɪᴄᴋ &7ᴛᴏ ᴏᴘᴇɴ");
+                Bukkit.dispatchCommand(p, "dh d addline " + name + " &#A3E635ʟᴇꜰᴛ-ᴄʟɪᴄᴋ &7ᴛᴏ ᴘʀᴇᴠɪᴇᴡ");
                 Bukkit.dispatchCommand(p, "dh d attribute " + name + " billboard FIXED");
                 Bukkit.dispatchCommand(p, "dh d set-facing " + name + " " + fyaw);
             }, t + 3);
