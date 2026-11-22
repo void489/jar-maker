@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune", "resetplayer", "reset", "prices");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune", "resetplayer", "reset", "prices", "perk", "obrewards");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -167,6 +167,8 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                 }
             }
             case "key" -> plugin.chests().keyCommand(sender, a);
+            case "perk" -> plugin.tokenShop().command(sender, a);
+            case "obrewards" -> plugin.obRewards().debug(sender);
             case "crate" -> {
                 if (a.length >= 2 && (a[1].equalsIgnoreCase("link") || a[1].equalsIgnoreCase("unlink") || a[1].equalsIgnoreCase("chests") || a[1].equalsIgnoreCase("holograms"))) {
                     plugin.chests().chestCommand(sender, a);

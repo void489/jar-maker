@@ -200,3 +200,20 @@ reset:
   oneblock-commands:
     - "obadmin delete {player}"
   smp-commands: []
+
+# Bio Token sources in Oneblock. Phase and island level are read with PlaceholderAPI: run /mobzone obrewards in Oneblock to check them.
+oneblock-rewards:
+  enabled: true
+  poll-seconds: 30
+  phase-placeholder: "%aoneblock_my_island_phase%"
+  level-placeholder: "%Level_oneblock_island_level%"
+  phase-default-tokens: 10        # tokens the first time an island reaches any phase
+  quests-per-day: 3
+# Optional extra settings (built-in defaults are used if you leave these out):
+#   phase-tokens:  {underground: 15, snowy: 20}      (phase name in lowercase -> tokens)
+#   level-milestones: [{level: 10, tokens: 5}, {level: 50, tokens: 15}]
+#   quest-pool: [{id: blocks_100, desc: "Break 100 blocks", type: blocks, target: 100, cash: 500, tokens: 1}]   (types: blocks, mobs, sell)
+
+# Permanent perks sold in /tokenshop for Bio Tokens (built-in defaults: nick, hat, workbench, enderchest).
+tokenshop:
+  note: "perks use the built-in list; add 'perks:' here to change prices"

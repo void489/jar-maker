@@ -375,6 +375,9 @@ public final class Market {
         }
         long total = plan.total();
         if (total > 0) Util.console("eco give " + p.getName() + " " + total);
+        int items = 0;
+        for (int q : plan.sold.values()) items += q;
+        plugin.obRewards().onSold(p, items);
         dirty = true;
         return total;
     }

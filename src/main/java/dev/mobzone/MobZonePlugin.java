@@ -45,6 +45,7 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(rankBonus, this);
         getServer().getPluginManager().registerEvents(chatFormat, this);
         getServer().getPluginManager().registerEvents(quests, this);
+        getServer().getPluginManager().registerEvents(obRewards, this);
         getServer().getPluginManager().registerEvents(chests, this);
         getServer().getPluginManager().registerEvents(gameModes, this);
         getServer().getPluginManager().registerEvents(resets, this);
@@ -92,6 +93,7 @@ public final class MobZonePlugin extends JavaPlugin {
         market.shutdown();
         resets.shutdown();
         quests.shutdown();
+        obRewards.shutdown();
         events.shutdown();
         tracked.clear();
     }
@@ -110,6 +112,8 @@ public final class MobZonePlugin extends JavaPlugin {
     private final ChatFormat chatFormat = new ChatFormat(this);
     private final CrateManager crates = new CrateManager(this);
     private final QuestManager quests = new QuestManager(this);
+    private final OneblockRewards obRewards = new OneblockRewards(this);
+    private final TokenShop tokenShop = new TokenShop(this);
     private final EventManager events = new EventManager(this);
     private final JoinWelcome welcome = new JoinWelcome(this);
 
@@ -120,6 +124,8 @@ public final class MobZonePlugin extends JavaPlugin {
     public Market market() { return market; }
     public PriceSync prices() { return prices; }
     public QuestManager quests() { return quests; }
+    public OneblockRewards obRewards() { return obRewards; }
+    TokenShop tokenShop() { return tokenShop; }
     public EventManager events() { return events; }
 
     public void reloadAll() {
@@ -150,6 +156,7 @@ public final class MobZonePlugin extends JavaPlugin {
         market.reload();
         prices.reload();
         quests.reload();
+        obRewards.reload();
         events.reload();
     }
 
@@ -159,7 +166,7 @@ public final class MobZonePlugin extends JavaPlugin {
         if (in == null) return;
         var def = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(
                 new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
-        for (String top : new String[]{"crates", "quests", "events", "welcome", "donor-bonus", "night-vision", "chat", "rank-bonus"}) {
+        for (String top : new String[]{"crates", "quests", "events", "welcome", "donor-bonus", "night-vision", "chat", "rank-bonus", "oneblock-rewards", "tokenshop"}) {
             if (getConfig().contains(top, true)) continue;
             var sec = def.getConfigurationSection(top);
             if (sec == null) continue;

@@ -166,7 +166,7 @@ public final class ResetManager implements Listener {
             plugin.quests().resetPlayer(id);
             pendingGear.add(id);
         }
-        if (has(scope, "oneblock")) pendingOb.add(id);
+        if (has(scope, "oneblock")) { pendingOb.add(id); plugin.obRewards().resetPlayer(id); }
     }
 
     public void resetPlayer(CommandSender s, String name, String scopeWord, String confirmWord) {
@@ -214,6 +214,7 @@ public final class ResetManager implements Listener {
             plugin.chests().resetAll();
             plugin.quests().resetAll();
         }
+        if (has(scope, "oneblock")) plugin.obRewards().resetAll();
         if (scope.equals("all")) plugin.wallets().resetAll();
         save();
         for (Player p : new ArrayList<>(Bukkit.getOnlinePlayers()))
