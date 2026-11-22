@@ -229,12 +229,16 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                 say(sender, n == 0 ? "No such zone." : "Sent settings to " + n + " spawners. Check the console for any 'invalid' messages.", n == 0 ? NamedTextColor.RED : NamedTextColor.GREEN);
             }
             case "resetplayer" -> {
-                if (a.length < 2) { say(sender, "/mobzone resetplayer <player> [confirm]", NamedTextColor.YELLOW); return true; }
-                plugin.resets().resetPlayer(sender, a[1], a.length > 2 ? a[2] : null);
+                if (a.length < 2) { say(sender, "/mobzone resetplayer <player> [prison|oneblock|smp|all] [confirm]", NamedTextColor.YELLOW); return true; }
+                String sc = a.length > 2 && ResetManager.isScope(a[2]) ? a[2] : null;
+                String cf = a.length > (sc != null ? 3 : 2) ? a[sc != null ? 3 : 2] : null;
+                plugin.resets().resetPlayer(sender, a[1], sc, cf);
             }
             case "reset" -> {
-                if (a.length < 2 || !a[1].equalsIgnoreCase("server")) { say(sender, "/mobzone reset server [confirm]", NamedTextColor.YELLOW); return true; }
-                plugin.resets().resetServer(sender, a.length > 2 ? a[2] : null);
+                if (a.length < 2 || !a[1].equalsIgnoreCase("server")) { say(sender, "/mobzone reset server [prison|oneblock|smp|all] [confirm]", NamedTextColor.YELLOW); return true; }
+                String sc = a.length > 2 && ResetManager.isScope(a[2]) ? a[2] : null;
+                String cf = a.length > (sc != null ? 3 : 2) ? a[sc != null ? 3 : 2] : null;
+                plugin.resets().resetServer(sender, sc, cf);
             }
             case "restore" -> {
                 if (a.length < 2) { say(sender, "/mobzone restore <player> [sword|armor|all]   (gives their gear back at their saved levels)", NamedTextColor.YELLOW); return true; }

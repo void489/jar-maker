@@ -81,7 +81,7 @@ public final class ResetManager implements Listener {
     }
 
     /** The console commands that wipe one player's progress (works for offline players too). */
-    private List<String> commandsFor(String n, UUID id) {
+    private List<String> commandsFor(String n, UUID id, boolean eco) {
         List<String> c = new ArrayList<>();
         c.add("minecraft:scoreboard players reset " + n + " kills");
         for (String z : ZONES) c.add("lp user " + id + " parent remove killgate_" + z);
@@ -93,7 +93,7 @@ public final class ResetManager implements Listener {
         for (String e : ENCH) c.add("lp user " + id + " meta unset ench_" + e);
         for (String a : ARM) c.add("lp user " + id + " meta unset arm_" + a);
         c.add("points reset " + n);
-        c.add("eco reset " + n);
+        if (eco) c.add("eco reset " + n);
         String rc = plugin.getConfig().getString("reset.rank-command", "ranks set rank {player} A default");
         if (!rc.isBlank()) c.add(rc.replace("{player}", n));
         return c;
@@ -113,57 +113,104 @@ public final class ResetManager implements Listener {
         return false;
     }
 
-    public void resetPlayer(CommandSender s, String name, String confirmWord) {
+    private static final List<String> SCOPES = List.of("prison", "oneblock", "smp", "all");
+
+    static boolean isScope(String x) { return x != null && SCOPES.contains(x.toLowerCase(Locale.ROOT)); }
+
+    private static boolean has(String scope, String mode) { return scope.equals("all") || scope.equals(mode); }
+
+    private static String describe(String scope) {
+        return switch (scope) {
+            case "prison" -> "PRISON progress (kills, gates, rank, prestige, upgrades, tokens, cash, keys, quests, gear)";
+            case "oneblock" -> "ONEBLOCK progress (island, island level, Oneblock cash)";
+            case "smp" -> "SMP progress";
+            default -> "EVERYTHING: Prison, Oneblock and SMP progress";
+        };
+    }
+
+    private List<String> listOf(String path, String n, UUID id) {
+        List<String> out = new ArrayList<>();
+        for (String c : plugin.getConfig().getStringList(path))
+            if (!c.isBlank()) out.add(c.replace("{player}", n).replace("{uuid}", id.toString()));
+        return out;
+    }
+
+    private String startCash(String mode) { return String.valueOf(plugin.getConfig().getLong("wallets.start." + mode, 0L)); }
+
+    /** Console commands that wipe one player for the given scope. */
+    private List<String> planFor(String n, UUID id, String scope) {
+        List<String> c = new ArrayList<>();
+        boolean all = scope.equals("all");
+        if (has(scope, "prison")) c.addAll(commandsFor(n, id, all));
+        if (has(scope, "oneblock")) c.addAll(listOf("reset.oneblock-commands", n, id));
+        if (has(scope, "smp")) c.addAll(listOf("reset.smp-commands", n, id));
+        if (all) plugin.wallets().resetPlayer(id);
+        else {
+            String cmd = plugin.wallets().resetMode(id, scope, n);
+            if (cmd != null) c.add(cmd);
+        }
+        return c;
+    }
+
+    private void applyPluginState(UUID id, String scope) {
+        if (has(scope, "prison")) {
+            plugin.chests().resetPlayer(id);
+            plugin.quests().resetPlayer(id);
+            pendingGear.add(id);
+        }
+    }
+
+    public void resetPlayer(CommandSender s, String name, String scopeWord, String confirmWord) {
+        String scope = scopeWord == null ? "all" : scopeWord.toLowerCase(Locale.ROOT);
+        if (!SCOPES.contains(scope)) { Util.tell(s, "&e/mobzone resetplayer <player> [prison|oneblock|smp|all] [confirm]"); return; }
         OfflinePlayer t = Bukkit.getPlayerExact(name);
         if (t == null) {
             t = Bukkit.getOfflinePlayerIfCached(name);
             if (t == null || !t.hasPlayedBefore()) { Util.tell(s, "&cI don't know a player called " + name + "."); return; }
         }
         String n = t.getName() == null ? name : t.getName();
-        if (!confirmed(s, "p:" + n.toLowerCase(Locale.ROOT), confirmWord,
-                "&e&lThis wipes ALL progress for " + n + " (kills, gates, rank, prestige, upgrades, tokens, cash, keys, quests, gear). Staff and donor ranks stay.\n"
-                        + "&eType &f/mobzone resetplayer " + n + " confirm &ewithin 30 seconds to do it.")) return;
-        doPlayer(t, n);
-        Util.tell(s, "&a" + n + " reset. " + (t.isOnline() ? "Their gear and bonuses are reset in the prison world." : "Their gear and bonuses reset the next time they join the prison."));
-    }
-
-    private void doPlayer(OfflinePlayer t, String n) {
-        enqueue(commandsFor(n, t.getUniqueId()));
-        plugin.chests().resetPlayer(t.getUniqueId());
-        plugin.wallets().resetPlayer(t.getUniqueId());
-        plugin.quests().resetPlayer(t.getUniqueId());
-        pendingGear.add(t.getUniqueId());
+        if (!confirmed(s, "p:" + n.toLowerCase(Locale.ROOT) + ":" + scope, confirmWord,
+                "&e&lThis wipes " + describe(scope) + " for " + n + ". Staff and donor ranks stay.\n"
+                        + "&eType &f/mobzone resetplayer " + n + " " + scope + " confirm &ewithin 30 seconds to do it.")) return;
+        enqueue(planFor(n, t.getUniqueId(), scope));
+        applyPluginState(t.getUniqueId(), scope);
         save();
         Player on = t.getPlayer();
-        if (on != null) {
+        if (on != null && has(scope, "prison")) {
             Util.tell(on, "&#A3E635[Reset] &7Your progress was reset. Starting over from rank A!");
             Bukkit.getScheduler().runTaskLater(plugin, () -> applyGear(on), 60L);
+        } else if (on != null) {
+            Util.tell(on, "&#A3E635[Reset] &7Your " + scope + " progress was reset.");
         }
+        Util.tell(s, "&a" + n + " reset (" + scope + "). It runs in the background.");
     }
 
-    public void resetServer(CommandSender s, String confirmWord) {
-        if (!confirmed(s, "server", confirmWord,
-                "&c&lRESET THE WHOLE SERVER? This wipes every player's kills, gates, rank, prestige, upgrades, tokens, cash, keys, quests and gear (staff and donor ranks stay). It cannot be undone.\n"
+    public void resetServer(CommandSender s, String scopeWord, String confirmWord) {
+        String scope = scopeWord == null ? "all" : scopeWord.toLowerCase(Locale.ROOT);
+        if (!SCOPES.contains(scope)) { Util.tell(s, "&e/mobzone reset server [prison|oneblock|smp|all] [confirm]"); return; }
+        if (!confirmed(s, "server:" + scope, confirmWord,
+                "&c&lRESET THE SERVER? This wipes every player's " + describe(scope) + ". Staff and donor ranks stay. It cannot be undone.\n"
                         + "&cMake a backup first (world folders, plugins/ and /lp export backup).\n"
-                        + "&cType &f/mobzone reset server confirm &cwithin 30 seconds. Everyone online will be kicked.")) return;
+                        + "&cType &f/mobzone reset server " + scope + " confirm &cwithin 30 seconds. Everyone online will be kicked.")) return;
         List<String> all = new ArrayList<>();
         Set<UUID> seen = new HashSet<>();
-        List<OfflinePlayer> players = new ArrayList<>(List.of(Bukkit.getOfflinePlayers()));
-        for (OfflinePlayer op : players) {
+        for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
             if (op.getName() == null || !seen.add(op.getUniqueId())) continue;
-            all.addAll(commandsFor(op.getName(), op.getUniqueId()));
-            pendingGear.add(op.getUniqueId());
+            all.addAll(planFor(op.getName(), op.getUniqueId(), scope));
+            applyPluginState(op.getUniqueId(), scope);
         }
-        all.add(0, "minecraft:scoreboard players reset * kills");
-        plugin.chests().resetAll();
-        plugin.wallets().resetAll();
-        plugin.quests().resetAll();
+        if (has(scope, "prison")) {
+            all.add(0, "minecraft:scoreboard players reset * kills");
+            plugin.chests().resetAll();
+            plugin.quests().resetAll();
+        }
+        if (scope.equals("all")) plugin.wallets().resetAll();
         save();
         for (Player p : new ArrayList<>(Bukkit.getOnlinePlayers()))
             if (p != s) p.kick(Util.c("&aServer reset in progress.\n&7Rejoin in a minute to start fresh!"));
         enqueue(all);
-        Util.tell(s, "&aReset started for " + seen.size() + " players. It runs in the background (about " + (all.size() / Math.max(1, plugin.getConfig().getInt("reset.commands-per-tick", 8)) / 20 + 1)
-                + " seconds). Gear and bonuses reset when each player next enters the prison.");
+        Util.tell(s, "&aReset (" + scope + ") started for " + seen.size() + " players. It runs in the background (about " + (all.size() / Math.max(1, plugin.getConfig().getInt("reset.commands-per-tick", 8)) / 20 + 1)
+                + " seconds). Prison gear and bonuses reset when each player next enters the prison.");
     }
 
     // ---------------------------------------------------------------- applied when the player is in prison

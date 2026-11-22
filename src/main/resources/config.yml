@@ -193,3 +193,10 @@ oneblock-respawn-command: "ob go"
 # /spawn inside these worlds goes to the warp instead of the lobby (world name starts with: warp name)
 spawn-redirect:
   oneblock: oneblock
+
+# /mobzone reset server [prison|oneblock|smp|all] runs these per player. {player} and {uuid} are filled in.
+reset:
+  commands-per-tick: 8
+  oneblock-commands:
+    - "obadmin delete {player}"
+  smp-commands: []

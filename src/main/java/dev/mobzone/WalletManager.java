@@ -68,6 +68,17 @@ public final class WalletManager implements Listener {
 
     public void resetAll() { active.clear(); saved.clear(); save(); }
 
+    /** Forgets one mode's saved cash. Returns a console command if that mode's cash is the live Essentials balance. */
+    public String resetMode(UUID id, String mode, String name) {
+        var m = saved.get(id);
+        if (m != null) m.remove(mode);
+        String cmd = null;
+        if (mode.equals(active.getOrDefault(id, "prison")))
+            cmd = "eco set " + name + " " + plugin.getConfig().getLong("wallets.start." + mode, 0L);
+        save();
+        return cmd;
+    }
+
     // ---------------------------------------------------------------- logic
 
     private boolean enabled() { return plugin.getConfig().getBoolean("wallets.enabled", true); }
