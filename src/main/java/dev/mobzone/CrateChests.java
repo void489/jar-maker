@@ -283,6 +283,8 @@ public final class CrateChests implements Listener {
                 Bukkit.dispatchCommand(p, "dh d addline " + name + " &7ʏᴏᴜʀ ᴋᴇʏꜱ&8: &f%mobzone_keys_" + crate.id() + "%");
                 Bukkit.dispatchCommand(p, "dh d addline " + name + " &#4ADE80ʀɪɢʜᴛ-ᴄʟɪᴄᴋ &7ᴛᴏ ᴏᴘᴇɴ");
                 Bukkit.dispatchCommand(p, "dh d addline " + name + " &#A3E635ʟᴇꜰᴛ-ᴄʟɪᴄᴋ &7ᴛᴏ ᴘʀᴇᴠɪᴇᴡ");
+                Bukkit.dispatchCommand(p, "dh d attribute " + name + " billboard VERTICAL");
+                Bukkit.dispatchCommand(p, "dh d attribute " + name + " background-color TRANSPARENT");
             }, t + 3);
             t += 8;
         }
