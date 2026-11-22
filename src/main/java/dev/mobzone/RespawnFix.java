@@ -67,6 +67,25 @@ public final class RespawnFix implements Listener {
         Util.console("warp " + warp + " " + p.getName());
     }
 
+    /** /guide opens the guide for the mode you are in. Config: guide-redirect.oneblock: guide_oneblock (world prefix: menu). Prison and the lobby keep the normal /guide. */
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onGuideCommand(PlayerCommandPreprocessEvent e) {
+        String raw = e.getMessage().trim().toLowerCase(Locale.ROOT);
+        if (raw.startsWith("/")) raw = raw.substring(1);
+        if (!raw.split("\\s+")[0].equals("guide")) return;
+        var p = e.getPlayer();
+        String world = p.getWorld().getName().toLowerCase(Locale.ROOT);
+        String menu = null;
+        var sec = plugin.getConfig().getConfigurationSection("guide-redirect");
+        if (sec != null && !sec.getKeys(false).isEmpty()) {
+            for (String k : sec.getKeys(false)) if (world.startsWith(k.toLowerCase(Locale.ROOT))) { menu = sec.getString(k); break; }
+        } else if (world.startsWith("oneblock")) menu = "guide_oneblock";
+        else if (world.startsWith("smp")) menu = "guide_smp";
+        if (menu == null || menu.isBlank()) return;
+        e.setCancelled(true);
+        Util.console("dm open " + menu + " " + p.getName());
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDeath(PlayerDeathEvent e) {
         if (plugin.getConfig().getBoolean("hide-death-messages", true)) e.deathMessage(null);

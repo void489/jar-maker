@@ -217,3 +217,8 @@ oneblock-rewards:
 # Permanent perks sold in /tokenshop for Bio Tokens (built-in defaults: nick, hat, workbench, enderchest).
 tokenshop:
   note: "perks use the built-in list; add 'perks:' here to change prices"
+
+# /guide shows a different menu per mode (world name prefix: DeluxeMenus menu). Prison and the lobby use the normal guide.
+guide-redirect:
+  oneblock: guide_oneblock
+  smp: guide_smp
