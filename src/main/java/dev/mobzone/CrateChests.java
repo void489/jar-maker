@@ -277,19 +277,12 @@ public final class CrateChests implements Listener {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dh delete " + name);
                 if (remove) return;
-                String icon = switch (crate.id()) {
-                    case "common" -> "GRAY_SHULKER_BOX"; case "uncommon" -> "LIME_SHULKER_BOX"; case "rare" -> "BLUE_SHULKER_BOX";
-                    case "epic" -> "PURPLE_SHULKER_BOX"; case "legendary" -> "ORANGE_SHULKER_BOX"; case "mythic" -> "RED_SHULKER_BOX";
-                    default -> "TRIPWIRE_HOOK";
-                };
-                Bukkit.dispatchCommand(p, "dh d create TEXT " + name + " #ICON: " + icon);
+                Bukkit.dispatchCommand(p, "dh d create TEXT " + name + " &8&m            ");
                 Bukkit.dispatchCommand(p, "dh d addline " + name + " " + crate.name());
                 Bukkit.dispatchCommand(p, "dh d addline " + name + " &8&m            ");
                 Bukkit.dispatchCommand(p, "dh d addline " + name + " &7ʏᴏᴜʀ ᴋᴇʏꜱ&8: &f%mobzone_keys_" + crate.id() + "%");
                 Bukkit.dispatchCommand(p, "dh d addline " + name + " &#4ADE80ʀɪɢʜᴛ-ᴄʟɪᴄᴋ &7ᴛᴏ ᴏᴘᴇɴ");
                 Bukkit.dispatchCommand(p, "dh d addline " + name + " &#A3E635ʟᴇꜰᴛ-ᴄʟɪᴄᴋ &7ᴛᴏ ᴘʀᴇᴠɪᴇᴡ");
-                Bukkit.dispatchCommand(p, "dh d attribute " + name + " billboard FIXED");
-                Bukkit.dispatchCommand(p, "dh d set-facing " + name + " " + fyaw);
             }, t + 3);
             t += 8;
         }
