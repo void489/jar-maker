@@ -56,7 +56,7 @@ public class OneblockRewards implements Listener {
     private boolean enabled = true, warnedPhase, warnedLevel;
     private long phaseDefault = 10;
     private int perDay = 3;
-    private String phasePh = "%aoneblock_my_island_phase%", levelPh = "%Level_oneblock_island_level%";
+    private String phasePh = "%aoneblock_my_island_phase%", levelPh = "%Level_aoneblock_island_level%";
     private BukkitTask poll, saveTask;
     private File file;
 
@@ -69,7 +69,7 @@ public class OneblockRewards implements Listener {
         var c = plugin.getConfig();
         enabled = c.getBoolean("oneblock-rewards.enabled", true);
         phasePh = c.getString("oneblock-rewards.phase-placeholder", "%aoneblock_my_island_phase%");
-        levelPh = c.getString("oneblock-rewards.level-placeholder", "%Level_oneblock_island_level%");
+        levelPh = c.getString("oneblock-rewards.level-placeholder", "%Level_aoneblock_island_level%");
         phaseDefault = c.getLong("oneblock-rewards.phase-default-tokens", 10);
         perDay = Math.max(1, c.getInt("oneblock-rewards.quests-per-day", 3));
         var ph = c.getConfigurationSection("oneblock-rewards.phase-tokens");
