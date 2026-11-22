@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "dev.mobzone"
-version = "3.10.1"
+version = "3.11.0"
 
 // Overridable on the command line: -PpaperApi=... -PmythicVersion=...
 val paperApi = providers.gradleProperty("paperApi").getOrElse("26.1.2.build.+")
@@ -68,4 +68,41 @@ val hoverJar = tasks.register<Jar>("hoverJar") {
 
 tasks.named("build") {
     dependsOn(hoverJar)
+}
+
+// ---- optional add-on: MobZone-Skins (zombie and boss skins via LibsDisguises, uploaded on the website).
+sourceSets {
+    create("skins") {
+        compileClasspath += sourceSets["main"].output + sourceSets["main"].compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+repositories {
+    maven("https://repo.md-5.net/content/groups/public/")
+}
+
+dependencies {
+    "skinsCompileOnly"("LibsDisguises:LibsDisguises:10.0.44") { isTransitive = false }
+}
+
+tasks.named<JavaCompile>("compileSkinsJava") {
+    options.encoding = "UTF-8"
+    options.release.set(25)
+    options.isFailOnError = false
+}
+
+tasks.named<ProcessResources>("processSkinsResources") {
+    filesMatching("plugin.yml") {
+        expand("version" to project.version)
+    }
+}
+
+val skinsJar = tasks.register<Jar>("skinsJar") {
+    archiveBaseName.set("MobZone-Skins")
+    from(sourceSets["skins"].output)
+}
+
+tasks.named("build") {
+    dependsOn(skinsJar)
 }

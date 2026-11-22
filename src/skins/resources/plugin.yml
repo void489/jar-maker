@@ -1,0 +1,11 @@
+name: MobZoneSkins
+version: '${version}'
+main: dev.mobzone.skins.SkinsPlugin
+api-version: '26.1'
+depend: [MobZone, MythicMobs, LibsDisguises]
+description: Gives zombies and bosses custom skins uploaded on the website (needs LibsDisguises).
+commands:
+  zombieskins:
+    description: Download the skins now / show status
+    usage: /zombieskins [reload]
+    permission: mobzone.admin

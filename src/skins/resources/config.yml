@@ -1,0 +1,4 @@
+# Skins are uploaded at https://voidlabs.fun/admin/skins and downloaded from here.
+url: "https://voidlabs.fun/skins.json"
+key: "IGBRO"            # must match PRICES_KEY on the website
+refresh-minutes: 5
