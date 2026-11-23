@@ -78,9 +78,9 @@ public final class Rtp implements Listener, CommandExecutor {
     private ItemStack icon(Material m, String name, String... lore) {
         ItemStack it = new ItemStack(m);
         ItemMeta meta = it.getItemMeta();
-        meta.displayName(Util.c(name).decoration(org.bukkit.format.TextDecoration.ITALIC, false));
+        meta.displayName(Util.c(name).decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false));
         List<net.kyori.adventure.text.Component> ls = new ArrayList<>();
-        for (String x : lore) ls.add(Util.c(x).decoration(org.bukkit.format.TextDecoration.ITALIC, false));
+        for (String x : lore) ls.add(Util.c(x).decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false));
         meta.lore(ls);
         it.setItemMeta(meta);
         return it;
