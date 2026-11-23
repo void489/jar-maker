@@ -88,6 +88,8 @@ public final class Market {
         return null;
     }
 
+    int ahLimit(Player p) { return Math.max(0, plugin.ranks().rankOf(p).ah()); }
+    int orderMax(Player p) { return Math.max(1, plugin.ranks().rankOf(p).orders()); }
     int cfgInt(String path, int def) { return plugin.getConfig().getInt("economy." + path, def); }
 
     // ---------------------------------------------------------------- load / save
@@ -438,7 +440,7 @@ public final class Market {
 
     /** Creates an order and holds the cash. Returns an error message, or null on success. */
     String createOrder(Player p, String mode, Material item, int amount, long price) {
-        int maxAmt = cfgInt("max-order-amount", 2304), maxPrice = cfgInt("max-price", 1_000_000), maxOrders = cfgInt("max-orders", 10);
+        int maxAmt = orderMax(p), maxPrice = cfgInt("max-price", 1_000_000), maxOrders = cfgInt("max-orders", 10);
         if (item == null || item.isAir() || !item.isItem()) return "That isn't an item.";
         if (amount < 1 || amount > maxAmt) return "Amount must be 1 to " + Util.money(maxAmt) + ".";
         if (price < 1 || price > maxPrice) return "Price each must be 1 to " + Util.money(maxPrice) + ".";

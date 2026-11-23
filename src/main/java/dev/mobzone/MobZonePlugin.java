@@ -46,6 +46,8 @@ public final class MobZonePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(chatFormat, this);
         getServer().getPluginManager().registerEvents(quests, this);
         getServer().getPluginManager().registerEvents(obRewards, this);
+        getServer().getPluginManager().registerEvents(rankMgr, this);
+        getServer().getPluginManager().registerEvents(rtp, this);
         getServer().getPluginManager().registerEvents(chests, this);
         getServer().getPluginManager().registerEvents(gameModes, this);
         getServer().getPluginManager().registerEvents(resets, this);
@@ -66,6 +68,12 @@ public final class MobZonePlugin extends JavaPlugin {
             var c = getCommand(n);
             if (c != null) { c.setExecutor(staff); c.setTabCompleter(staff); }
         }
+        var rt = getCommand("rtp");
+        if (rt != null) rt.setExecutor(rtp);
+        var an = getCommand("announce");
+        if (an != null) { Announce ann = new Announce(this); an.setExecutor(ann); an.setTabCompleter(ann); }
+        var rc = getCommand("rank");
+        if (rc != null) { rc.setExecutor(rankMgr); rc.setTabCompleter(rankMgr); }
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) registerPlaceholders();
         MobZoneCommand cmd = new MobZoneCommand(this);
         var pc = getCommand("mobzone");
@@ -94,6 +102,7 @@ public final class MobZonePlugin extends JavaPlugin {
         resets.shutdown();
         quests.shutdown();
         obRewards.shutdown();
+        rankMgr.shutdown();
         events.shutdown();
         tracked.clear();
     }
@@ -113,6 +122,8 @@ public final class MobZonePlugin extends JavaPlugin {
     private final CrateManager crates = new CrateManager(this);
     private final QuestManager quests = new QuestManager(this);
     private final OneblockRewards obRewards = new OneblockRewards(this);
+    private final RankManager rankMgr = new RankManager(this);
+    private final Rtp rtp = new Rtp(this);
     private final TokenShop tokenShop = new TokenShop(this);
     private final EventManager events = new EventManager(this);
     private final JoinWelcome welcome = new JoinWelcome(this);
@@ -125,6 +136,8 @@ public final class MobZonePlugin extends JavaPlugin {
     public PriceSync prices() { return prices; }
     public QuestManager quests() { return quests; }
     public OneblockRewards obRewards() { return obRewards; }
+    public RankManager ranks() { return rankMgr; }
+    public Rtp rtp() { return rtp; }
     TokenShop tokenShop() { return tokenShop; }
     public EventManager events() { return events; }
 
@@ -157,6 +170,8 @@ public final class MobZonePlugin extends JavaPlugin {
         prices.reload();
         quests.reload();
         obRewards.reload();
+        rankMgr.reload();
+        rtp.reload();
         events.reload();
     }
 

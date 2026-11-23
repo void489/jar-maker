@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public final class MobZoneCommand implements CommandExecutor, TabCompleter {
     private static final List<String> SUBS = List.of(
-            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune", "resetplayer", "reset", "prices", "perk", "obrewards");
+            "pos1", "pos2", "create", "delete", "list", "info", "addspawner", "removespawner", "reload", "boss", "me", "crate", "key", "event", "update", "set", "restore", "tune", "resetplayer", "reset", "prices", "perk", "obrewards", "dimension");
 
     private final MobZonePlugin plugin;
     private final Map<UUID, Location> pos1 = new HashMap<>();
@@ -261,6 +261,15 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                 say(sender, ok ? "Moved " + a[2] + " to your position." : "Could not find that " + a[1] + ".",
                         ok ? NamedTextColor.GREEN : NamedTextColor.RED);
             }
+            case "dimension" -> {
+                if (a.length < 3 || !(a[1].equalsIgnoreCase("nether") || a[1].equalsIgnoreCase("end")) || !(a[2].equalsIgnoreCase("on") || a[2].equalsIgnoreCase("off"))) {
+                    say(sender, "Use /mobzone dimension <nether|end> <on|off>. Now: " + plugin.rtp().dimensionStatus(), NamedTextColor.YELLOW);
+                } else {
+                    boolean on = a[2].equalsIgnoreCase("on");
+                    plugin.rtp().setDimension(a[1].toLowerCase(Locale.ROOT), on);
+                    say(sender, "SMP " + a[1].toLowerCase(Locale.ROOT) + " is now " + (on ? "ON" : "OFF") + ". (" + plugin.rtp().dimensionStatus() + ")", on ? NamedTextColor.GREEN : NamedTextColor.RED);
+                }
+            }
             case "prices" -> {
                 say(sender, "Prices: " + plugin.prices().status() + ". Checking the website...", NamedTextColor.YELLOW);
                 plugin.prices().fetchNow(msg -> say(sender, msg, msg.startsWith("Prices updated") ? NamedTextColor.GREEN : NamedTextColor.RED));
@@ -292,6 +301,11 @@ public final class MobZoneCommand implements CommandExecutor, TabCompleter {
                 opts.add("random");
                 for (String s : opts) if (s.startsWith(a[2].toLowerCase(Locale.ROOT))) out.add(s);
             }
+            return out;
+        }
+        if (sub.equals("dimension")) {
+            List<String> o = a.length == 2 ? List.of("nether", "end") : a.length == 3 ? List.of("on", "off") : List.of();
+            for (String s : o) if (s.startsWith(a[a.length - 1].toLowerCase(Locale.ROOT))) out.add(s);
             return out;
         }
         if (sub.equals("update") && a.length == 2) {

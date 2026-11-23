@@ -6,6 +6,15 @@ depend: [MythicMobs]
 softdepend: [PlaceholderAPI]
 description: Keeps MythicMobs spawner mobs inside cuboid zones.
 commands:
+  rank:
+    description: Show your member rank, or give one (admin)
+    usage: /rank [list|give <player> <rank>|refresh]
+  rtp:
+    description: Random teleport menu (SMP)
+    usage: /rtp
+  announce:
+    description: Show an announcement title to a world or everyone
+    usage: /announce <world|all> <message>
   mobzone:
     description: Manage mob zones
     usage: /mobzone <pos1|pos2|create|delete|list|info|addspawner|removespawner|update|set|reload>

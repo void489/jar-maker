@@ -62,6 +62,7 @@ public final class MarketGui implements Listener {
     private static final class MineH extends H { List<Market.Order> shown = new ArrayList<>(); }
     private static final class AhH extends H { String query; int page, sort; List<Market.Listing> shown = new ArrayList<>(); }
     private static final class MyAhH extends H { List<Market.Listing> shown = new ArrayList<>(); }
+    private static final class WorthH extends H { int page; List<Map.Entry<Material, Double>> items = new ArrayList<>(); }
     private static final class BuyH extends H { long listingId; }
     private static final class ShopMenuH extends H { List<Market.ShopCat> cats = new ArrayList<>(); }
     private static final class ShopH extends H { Market.ShopCat cat; int page; List<Map.Entry<Material, Long>> items = new ArrayList<>(); }
@@ -171,9 +172,8 @@ public final class MarketGui implements Listener {
     private void worthCmd(Player p, String mode, String[] a) {
         Material m;
         if (a.length == 0) {
-            ItemStack h = p.getInventory().getItemInMainHand();
-            if (h.getType().isAir()) { Util.tell(p, "&7Hold an item or use &f/worth <item>&7."); return; }
-            m = h.getType();
+            openWorth(p, mode, 0);
+            return;
         } else {
             m = market.findMaterial(join(a, 0));
             if (m == null) { Util.tell(p, "&cCouldn't find that item."); return; }
@@ -324,6 +324,27 @@ public final class MarketGui implements Listener {
             h.inv.setItem(CAT_SLOTS[i], icon(c.icon, c.name, "&7" + c.items.size() + " items", "&eClick to open"));
         }
         if (h.cats.isEmpty()) h.inv.setItem(13, icon(Material.BARRIER, "&cThe shop is empty", "&7Add items in shop.yml"));
+        p.openInventory(h.inv);
+    }
+
+    private void openWorth(Player p, String mode, int page) {
+        WorthH h = new WorthH(); h.mode = mode;
+        for (var en : market.worthSnapshot(mode).entrySet()) if (en.getValue() > 0 && en.getKey().isItem()) h.items.add(en);
+        h.items.sort((x, y) -> { int c = Double.compare(y.getValue(), x.getValue()); return c != 0 ? c : x.getKey().name().compareTo(y.getKey().name()); });
+        int pages = Math.max(1, (h.items.size() + ITEMS - 1) / ITEMS);
+        h.page = Math.max(0, Math.min(page, pages - 1));
+        open(p, h, 54, "&8Worth: " + (mode.equals("smp") ? "SMP" : "Oneblock") + " (" + (h.page + 1) + "/" + pages + ")");
+        for (int i = 0; i < ITEMS; i++) {
+            int idx = h.page * ITEMS + i;
+            if (idx >= h.items.size()) break;
+            var en = h.items.get(idx);
+            h.inv.setItem(i, withLore(new ItemStack(en.getKey()), List.of("&7Sells for: &a$" + Market.fmt(en.getValue()) + " &7each")));
+        }
+        ItemStack pane = icon(Material.GRAY_STAINED_GLASS_PANE, " ");
+        for (int i = ITEMS; i <= LAST; i++) h.inv.setItem(i, pane);
+        if (h.page > 0) h.inv.setItem(45, icon(Material.ARROW, "&ePrevious page", "&7Page " + h.page + "/" + pages));
+        h.inv.setItem(49, icon(Material.EMERALD, "&aMost expensive first", "&7" + h.items.size() + " items", "&7Sell with &f/sell"));
+        if (h.page < pages - 1) h.inv.setItem(LAST, icon(Material.ARROW, "&eNext page", "&7Page " + (h.page + 2) + "/" + pages));
         p.openInventory(h.inv);
     }
 
@@ -490,10 +511,10 @@ public final class MarketGui implements Listener {
             Material m = text.equalsIgnoreCase("hand") ? p.getInventory().getItemInMainHand().getType() : market.findMaterial(text);
             if (m == null || m.isAir()) { Util.tell(p, "&#A3E635[Orders] &cCouldn't find that item. Try again, or type &fcancel&c."); return; }
             pr.item = m; pr.step = 2;
-            Util.tell(p, "&#A3E635[Orders] &7Item: &f" + Market.nice(m) + "&7. How many do you want? (1-" + Util.money(market.cfgInt("max-order-amount", 2304)) + ")");
+            Util.tell(p, "&#A3E635[Orders] &7Item: &f" + Market.nice(m) + "&7. How many do you want? (1-" + Util.money(market.orderMax(p)) + ")");
         } else if (pr.step == 2) {
             long n = parseNum(text);
-            if (n < 1 || n > market.cfgInt("max-order-amount", 2304)) { Util.tell(p, "&#A3E635[Orders] &cType a whole number in range, or &fcancel&c."); return; }
+            if (n < 1 || n > market.orderMax(p)) { Util.tell(p, "&#A3E635[Orders] &cType a whole number in range, or &fcancel&c."); return; }
             pr.amount = (int) n; pr.step = 3;
             Util.tell(p, "&#A3E635[Orders] &7How much &fper item&7? Worth is &a$" + Market.fmt(market.worthOf(pr.mode, pr.item)) + "&7. Higher prices get filled first.");
         } else {
@@ -540,8 +561,8 @@ public final class MarketGui implements Listener {
             }
         }
         long listPrice = pl.orderItems == 0 ? price : Math.max(1, Math.round(price * (double) left / amount));
-        if (left > 0 && market.myListings(mode, p.getUniqueId()).size() >= market.cfgInt("ah-max-listings", 10)) {
-            Util.tell(p, "&#A3E635[AH] &cYou already have " + market.cfgInt("ah-max-listings", 10) + " listings. Take some back with &f/ah mine&c.");
+        if (left > 0 && market.myListings(mode, p.getUniqueId()).size() >= market.ahLimit(p)) {
+            Util.tell(p, "&#A3E635[AH] &cYou already have " + market.ahLimit(p) + " listings. Take some back with &f/ah mine&c.");
             return;
         }
         if (pl.orderItems > 0) {
@@ -707,6 +728,10 @@ public final class MarketGui implements Listener {
             } else if (slot == 45 && sh.page > 0) openShop(p, sh.mode, sh.cat, sh.page - 1);
             else if (slot == LAST) openShop(p, sh.mode, sh.cat, sh.page + 1);
             else if (slot == 48) openShopMenu(p, sh.mode);
+        }
+        else if (h instanceof WorthH w) {
+            if (slot == 45 && w.page > 0) openWorth(p, w.mode, w.page - 1);
+            else if (slot == LAST) openWorth(p, w.mode, w.page + 1);
         }
         else if (h instanceof BuyH b) {
             if (slot == 11) buy(p, b);

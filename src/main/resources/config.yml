@@ -226,3 +226,21 @@ guide-redirect:
 
 # SMP: players who die without a bed go back to this warp (set it with /setwarp smp).
 smp-respawn-warp: smp
+
+# Member ranks (made on the website, Ranks tab). Uses economy.prices-url / prices-key to download.
+ranks:
+  url: ""              # empty = same site as economy.prices-url, with ranks.json
+  luckperms: true      # make LuckPerms groups mem_<id> with a coloured prefix
+  pay-tokens: true     # give Bio Tokens every minute online (rank decides how many)
+
+# SMP random teleport (/rtp)
+rtp:
+  cooldown-seconds: 30
+  worlds:
+    overworld: smp
+    nether: smp_nether
+    end: smp_the_end
+  radius:
+    overworld: 5000
+    nether: 2000
+    end: 2500
